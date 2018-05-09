@@ -29,8 +29,8 @@ export class Utils {
     public maxAzimuth: number;
     public minAzimuth: number;
     public maxDistance: number;
-    public alpha: number;       // angle between north and half-bearing
-    public destination: any; // point between north and half-bearing
+    public alpha: number;       // angle between north and half-bearing *azimuth
+    public destination: any; // point between north and half-bearing *point
 
     hydratePoisByDistanceAndBearing(antenna: Antenna) {
         let isFirstTime = true;
@@ -57,7 +57,7 @@ export class Utils {
         });
         const angleHalf = (this.maxAzimuth - this.minAzimuth) / 2;
         this.alpha = this.minAzimuth + angleHalf;
-        this.destination = this.toFeature(destination(this.toTurf(antenna), this.maxDistance, this.alpha));
+        this.destination = this.toFeature(destination(this.toTurf(antenna), this.maxDistance, this.azimuthToBearing(this.alpha)));
     }
 
     toTurf(a: Poi | Antenna) {
@@ -66,23 +66,16 @@ export class Utils {
             geometry: new Point(a.position)
         });
         const json = format.writeFeatureObject(feature, {
-            // dataProjection: 'EPSG:4326',
-            // featureProjection: 'EPSG:3857'
+            dataProjection: 'EPSG:4326',
         });
         return json;
     }
 
+
     toFeature(json: any) {
         const format = new GeoJSON();
-        const features = format.readFeatures(json);
-        return features[0];
-    }
-
-    toFeatureWithTransform(json: any) {
-        const format = new GeoJSON();
         const features = format.readFeatures(json, {
-            dataProjection: 'EPSG:4326',
-            featureProjection: 'EPSG:3857'
+            dataProjection: 'EPSG:4326'
         });
         return features[0];
     }
@@ -102,33 +95,29 @@ export class Utils {
 
 
     initMap(map: Map, antenna: Antenna) {
-        map = new Map({
-          view: new View({
-            center: proj.fromLonLat(antenna.position),
-            zoom: 7
-          }),
-          layers: [
-            new Tile({
-              source: new BingMaps({
+        const bing_layer = new Tile({
+            source: new BingMaps({
                 key: 'Aj_lt5oGlcTzENwKBowFxOxF8JwHR8eaxf66ufX0WfSYs8rGrny5JfIv0Cp1ODT4',
                 imagerySet: 'CanvasLight'
-                // imagerySet: 'BirdseyeV2'
-              })
             })
-          ],
+        });
+        bing_layer.set('name', 'bing');
+        map = new Map({
+          view: new View({
+            projection: 'EPSG:4326'
+          }),
+          layers: [bing_layer],
           target: 'map'
         });
-        // this.renderAntenna(map, antenna);
-        // this.renderNorth(map, antenna);
-        // this.hydratePoisByDistanceAndBearing(antenna);
-        // this.renderDestination(map, antenna);
-        // this.renderSector(map, antenna);
 
         this.hydratePoisByDistanceAndBearing(antenna);
         this.renderSector(map, antenna);
         this.renderDestination(map, antenna);
         this.renderNorth(map, antenna);
         this.renderAntenna(map, antenna);
+        this.renderAngles(map, antenna);
+
+        this.zoomToExtent(map);
 
         map.updateSize();
     }
@@ -152,7 +141,7 @@ export class Utils {
             })
         });
         const feature = new Feature({
-            geometry: new Point(proj.fromLonLat(antenna.position))
+            geometry: new Point(antenna.position)
         });
         feature.setStyle(style_antenna);
         const layer_antenna = new Vector({
@@ -182,7 +171,7 @@ export class Utils {
               })
               });
               const feature_poi = new Feature({
-                geometry: new Point(proj.fromLonLat(poi.position)),
+                geometry: new Point(poi.position),
                 name: poi.name,
               });
               feature_poi.setStyle(style_poi);
@@ -198,19 +187,15 @@ export class Utils {
         map.addLayer(layer_antenna);
         map.addLayer(layer_pois);
 
-        // Zoom to extent
-        const extent = Extent.createEmpty();
-        Extent.extend(extent, layer_antenna.getSource().getExtent());
-        Extent.extend(extent, layer_pois.getSource().getExtent());
-        map.getView().fit(extent);
+
     }
 
     renderNorth(map: Map, antenna: Antenna) {
         const north_point = this.toFeature(destination(this.toTurf(antenna), this.maxDistance, 0));
         const lineString = new LineString();
 
-        lineString.appendCoordinate(proj.fromLonLat(antenna.position));
-        lineString.appendCoordinate(proj.fromLonLat(north_point.getGeometry().getCoordinates()));
+        lineString.appendCoordinate(antenna.position);
+        lineString.appendCoordinate(north_point.getGeometry().getCoordinates());
         const feature_line = new Feature({
             geometry: lineString
         });
@@ -222,7 +207,7 @@ export class Utils {
         }));
 
         const feature_point = new Feature({
-            geometry: new Point(proj.fromLonLat(north_point.getGeometry().getCoordinates()))
+            geometry: new Point(north_point.getGeometry().getCoordinates())
         });
         feature_point.setStyle(new Style({
             image: new Icon({
@@ -253,37 +238,15 @@ export class Utils {
             })
         });
         const point = new Feature({
-            geometry: new Point(proj.fromLonLat(this.destination.getGeometry().getCoordinates()))
+            geometry: new Point(this.destination.getGeometry().getCoordinates())
         });
         point.setStyle(style_point);
-
-        // Arc
-        const line_half = this.toFeatureWithTransform(lineArc(this.toTurf(antenna), this.maxDistance,
-        this.azimuthToBearing(this.alpha), 0));
-        line_half.setStyle(new Style({
-            text: new Text({
-                text: Math.abs(round(this.azimuthToBearing(this.alpha), 2)) + '°',
-                scale: 1.2,
-                rotation:  this.alpha,
-                fill: new Fill({
-                    color: '#ffce00'
-                }),
-                stroke: new Stroke({
-                    color: '#000000',
-                    width: 3
-                })
-            }),
-            stroke: new Stroke({
-                color: '#ffce00',
-                width: 2
-            })
-        }));
 
         // Axe
         const lineString = new LineString();
 
-        lineString.appendCoordinate(proj.fromLonLat(antenna.position));
-        lineString.appendCoordinate(proj.fromLonLat(this.destination.getGeometry().getCoordinates()));
+        lineString.appendCoordinate(antenna.position);
+        lineString.appendCoordinate(this.destination.getGeometry().getCoordinates());
 
         const axe = new Feature({
             geometry: lineString
@@ -297,7 +260,7 @@ export class Utils {
 
         const layer_destination =  new Vector({
             source: new Source({
-                features: [point, line_half, axe]
+                features: [point , axe]
             })
         });
         layer_destination.set('name', 'destination');
@@ -309,23 +272,99 @@ export class Utils {
         const b1 = this.alpha - (antenna.angleOfView.angle / 2);
         const b2 = this.alpha + (antenna.angleOfView.angle / 2);
 
-        const range = sector(this.toTurf(antenna), this.maxDistance, b1, b2);
+        const antenna_sector = sector(this.toTurf(antenna), this.maxDistance, this.azimuthToBearing(b1), this.azimuthToBearing(b2));
 
         const layer = new Vector({
             source: new Source({
-                features: [this.toFeatureWithTransform(range)]
+                features: [this.toFeature(antenna_sector)]
             }),
             style: new Style({
                 fill: new Fill({
-                    color: '#ff9a00'
+                    color: '#9b59b6'
                 }),
                 stroke: new Stroke({
-                    color: '#ff8100',
+                    color: '#8e44ad',
                     width: 2
                 })
             }),
             opacity: 0.3
         });
+        layer.set('name', 'sector');
         map.addLayer(layer);
+    }
+
+    renderAngles(map: Map, antenna: Antenna) {
+
+        // Arc alpha
+        let arc_alpha: Feature;
+        const alpha_to_bearing = this.azimuthToBearing(this.alpha);
+        if (alpha_to_bearing >= 0) {
+            arc_alpha = this.toFeature(lineArc(this.toTurf(antenna), this.maxDistance,
+        0, alpha_to_bearing));
+        } else {
+            arc_alpha = this.toFeature(lineArc(this.toTurf(antenna), this.maxDistance,
+            alpha_to_bearing, 0));
+        }
+        arc_alpha.setStyle(new Style({
+            text: new Text({
+                text: Math.abs(round(this.azimuthToBearing(this.alpha), 2)) + '°',
+                scale: 1.2,
+                rotation:  this.alpha,
+                fill: new Fill({
+                    color: '#f1c40f'
+                }),
+                stroke: new Stroke({
+                    color: '#000000',
+                    width: 3
+                })
+            }),
+            stroke: new Stroke({
+                color: '#f39c12',
+                width: 2
+            })
+        }));
+
+        // arc angle of view
+        const b1 = this.alpha - (antenna.angleOfView.angle / 2);
+        const b2 = this.alpha + (antenna.angleOfView.angle / 2);
+        const arc_angle_view = this.toFeature(lineArc(this.toTurf(antenna), this.maxDistance * 0.25,
+        this.azimuthToBearing(b1), this.azimuthToBearing(b2)));
+        arc_angle_view.setStyle(new Style({
+            text: new Text({
+                text: Math.abs(round(this.azimuthToBearing(antenna.angleOfView.angle), 2)) + '°',
+                scale: 1.2,
+                rotation:  this.alpha,
+                fill: new Fill({
+                    color: '#f1c40f'
+                }),
+                stroke: new Stroke({
+                    color: '#000000',
+                    width: 3
+                })
+            }),
+            stroke: new Stroke({
+                color: '#f39c12',
+                width: 2
+            })
+        }));
+        const layer =  new Vector({
+            source: new Source({
+                features: [arc_alpha , arc_angle_view]
+            })
+        });
+        layer.set('name', 'angles');
+        map.addLayer(layer);
+    }
+
+    zoomToExtent(map: Map)  {
+        // Zoom to extent
+        const extent = Extent.createEmpty();
+        map.getLayers().forEach(ly => {
+            if (ly.get('name') !== 'bing') {
+                Extent.extend(extent, ly.getSource().getExtent());
+                console.log(ly.get('name'));
+            }
+         });
+        map.getView().fit(extent);
     }
 }
