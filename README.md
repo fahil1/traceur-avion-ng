@@ -1,2 +1,2 @@
 # Traceur Avion
-Ceci est est le front-end du projet de fin d'études avec Angular 6.
+Ceci est est le front-end de mon projet de fin d'études avec Angular 6.
