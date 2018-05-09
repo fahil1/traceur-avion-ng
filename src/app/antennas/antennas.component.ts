@@ -47,19 +47,19 @@ export class AntennasComponent implements OnInit {
     this.model.angleOfView.angle = 120;
     this.model.frequency = 124.4;
     this.model.poiList[0].name = 'KONBA';
-    // this.model.poiList[0].position = [-15.30167, 31.30083];
-    this.model.poiList[0].position = [-9.123889, 30.60944];
+    this.model.poiList[0].position = [-15.30167, 31.30083];
+    // this.model.poiList[0].position = [-9.123889, 30.60944];
 
     this.model.poiList.push(new Poi());
     this.model.poiList.push(new Poi());
 
     this.model.poiList[1].name = 'LEPRU';
-    // this.model.poiList[1].position = [-14.80111, 32];
-    this.model.poiList[1].position = [-9.178889, 30.45333];
+    this.model.poiList[1].position = [-14.80111, 32];
+    // this.model.poiList[1].position = [-9.178889, 30.45333];
 
     this.model.poiList[2].name = 'OSDIV';
-    // this.model.poiList[2].position = [-13.83611, 33.14944];
-    this.model.poiList[2].position = [-9.250278, 30.2875];
+    this.model.poiList[2].position = [-13.83611, 33.14944];
+    // this.model.poiList[2].position = [-9.250278, 30.2875];
 
    }
 
