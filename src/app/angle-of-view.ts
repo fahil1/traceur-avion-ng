@@ -1,6 +1,4 @@
 export class AngleOfView {
-    angle: number;
-    bearingStart: number;
-    bearingEnd: number;
-    distance: number;
+    angleRange: number;
+    angleCenter: number;
 }

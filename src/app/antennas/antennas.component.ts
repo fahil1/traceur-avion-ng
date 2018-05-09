@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ClrDatagridComparatorInterface, Wizard } from '@clr/angular';
+import { round } from '@turf/turf';
 import Map from 'ol/map';
+import View from 'ol/view';
 
 
 
@@ -31,6 +33,8 @@ export class AntennasComponent implements OnInit {
   ajaxCompleted = false;
   deleteModal = false;
   addModal = false;
+  isMapCreated = false;
+  frequencyChoosed: number = 1;
 
   selected: Antenna = new Antenna();
   model: Antenna = new Antenna();
@@ -44,7 +48,7 @@ export class AntennasComponent implements OnInit {
   ) {
     this.model.name = 'Agadir test';
     this.model.position = [-9.414388, 30.332335];
-    this.model.angleOfView.angle = 120;
+    this.model.angleOfView.angleRange = 120;
     this.model.frequency = 124.4;
     this.model.poiList[0].name = 'KONBA';
     this.model.poiList[0].position = [-15.30167, 31.30083];
@@ -64,10 +68,10 @@ export class AntennasComponent implements OnInit {
    }
 
   ngOnInit() {
-    this.getHeroes();
+    this.getAntennas();
   }
 
-  getHeroes() {
+  getAntennas() {
     this.ajaxCompleted = false;
     this.antennasService.getAntennas().subscribe(t => {
       this.antennas = t;
@@ -91,8 +95,26 @@ export class AntennasComponent implements OnInit {
     this.model.poiList.push(new Poi());
   }
 
+  onChange() {
+    setTimeout(_ => this.utils.renderMap(this.map, this.model, false), 500);
+  }
+
   calibrate() {
     this.model.totalPois = this.model.poiList.length;
-    setTimeout(_ => this.utils.initMap(this.map, this.model), 500);
+    setTimeout(_ => {
+      if (!this.isMapCreated) {
+        this.map = new Map({
+            view: new View({
+              projection: 'EPSG:4326'
+            }),
+            target: 'map'
+        });
+        this.isMapCreated = true;
+      }
+      this.utils.renderMap(this.map, this.model, true);
+    }, 500);
+  }
+  updateFreq() {
+    this.model.frequency = round(this.model.frequency * this.frequencyChoosed, 2);
   }
 }

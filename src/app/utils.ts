@@ -26,13 +26,32 @@ import BingMaps from 'ol/source/bingmaps';
 import Overlay from 'ol/overlay';
 
 export class Utils {
-    public maxAzimuth: number;
-    public minAzimuth: number;
-    public maxDistance: number;
-    public alpha: number;       // angle between north and half-bearing *azimuth
+    public maxAzimuth: number = 0;
+    public minAzimuth: number = 0;
+    public maxDistance: number = 0;
     public destination: any; // point between north and half-bearing *point
+    public coords: number[] = [0, 0];
+    public azimuthDepart: number = 0;
+    public azimuthArrivee: number= 0;
 
-    hydratePoisByDistanceAndBearing(antenna: Antenna) {
+    constructor() {
+
+    }
+
+    roundAll() {
+        this.maxAzimuth = round(this.maxAzimuth, 2);
+        this.minAzimuth = round(this.minAzimuth, 2);
+        this.maxDistance = round(this.maxDistance, 2);
+        this.coords = this.destination.getGeometry().getCoordinates();
+
+        this.coords[0] = round(this.coords[0], 2);
+        this.coords[1] = round(this.coords[1], 2);
+
+        this.azimuthDepart = round(this.azimuthDepart, 2);
+        this.azimuthArrivee = round(this.azimuthArrivee, 2);
+    }
+
+    hydratePoisByDistanceAndBearing(antenna: Antenna, calcAngleCenter) {
         let isFirstTime = true;
 
         antenna.poiList.forEach(poi => {
@@ -44,20 +63,23 @@ export class Utils {
                 this.maxDistance = poi.distance;
                 isFirstTime = false;
             } else {
-                if (poi.azimuth > this.maxAzimuth) {
+                if (poi.azimuth >= this.maxAzimuth) {
                     this.maxAzimuth = poi.azimuth;
                 }
-                if (poi.azimuth < this.minAzimuth) {
+                if (poi.azimuth <= this.minAzimuth) {
                     this.minAzimuth = poi.azimuth;
                 }
-                if (poi.distance > this.maxDistance) {
+                if (poi.distance >= this.maxDistance) {
                     this.maxDistance = poi.distance;
                 }
             }
         });
         const angleHalf = (this.maxAzimuth - this.minAzimuth) / 2;
-        this.alpha = this.minAzimuth + angleHalf;
-        this.destination = this.toFeature(destination(this.toTurf(antenna), this.maxDistance, this.azimuthToBearing(this.alpha)));
+        if (calcAngleCenter) {
+            antenna.angleOfView.angleCenter = this.minAzimuth + angleHalf;
+        }
+        this.destination = this.toFeature(destination(this.toTurf(antenna), this.maxDistance,
+            this.azimuthToBearing(antenna.angleOfView.angleCenter)));
     }
 
     toTurf(a: Poi | Antenna) {
@@ -81,8 +103,8 @@ export class Utils {
     }
 
     showMax() {
-        console.log('maxAzimuth: ' + this.azimuthToBearing(this.maxAzimuth));
-        console.log('minAzimuth: ' + this.azimuthToBearing(this.minAzimuth));
+        console.log('maxAzimuth: ' + this.maxAzimuth);
+        console.log('minAzimuth: ' + this.minAzimuth);
         console.log('maxDistance: ' + this.maxDistance);
     }
 
@@ -94,31 +116,28 @@ export class Utils {
     }
 
 
-    initMap(map: Map, antenna: Antenna) {
+    renderMap(map: Map, antenna: Antenna, calcAngleCenter: boolean) {
+        this.clear(map);
         const bing_layer = new Tile({
             source: new BingMaps({
                 key: 'Aj_lt5oGlcTzENwKBowFxOxF8JwHR8eaxf66ufX0WfSYs8rGrny5JfIv0Cp1ODT4',
-                imagerySet: 'CanvasLight'
+                imagerySet: 'RoadOnDemand'
             })
         });
         bing_layer.set('name', 'bing');
-        map = new Map({
-          view: new View({
-            projection: 'EPSG:4326'
-          }),
-          layers: [bing_layer],
-          target: 'map'
-        });
+        map.addLayer(bing_layer);
 
-        this.hydratePoisByDistanceAndBearing(antenna);
+        this.hydratePoisByDistanceAndBearing(antenna, calcAngleCenter);
         this.renderSector(map, antenna);
         this.renderDestination(map, antenna);
         this.renderNorth(map, antenna);
         this.renderAntenna(map, antenna);
         this.renderAngles(map, antenna);
+        if (calcAngleCenter) {
+            this.zoomToExtent(map);
+        }
 
-        this.zoomToExtent(map);
-
+        this.roundAll();
         map.updateSize();
     }
 
@@ -269,8 +288,10 @@ export class Utils {
     }
 
     renderSector(map: Map, antenna: Antenna) {
-        const b1 = this.alpha - (antenna.angleOfView.angle / 2);
-        const b2 = this.alpha + (antenna.angleOfView.angle / 2);
+        const b1 = antenna.angleOfView.angleCenter - (antenna.angleOfView.angleRange / 2);
+        const b2 = antenna.angleOfView.angleCenter + (antenna.angleOfView.angleRange / 2);
+        this.azimuthDepart = b1;
+        this.azimuthArrivee = b2;
 
         const antenna_sector = sector(this.toTurf(antenna), this.maxDistance, this.azimuthToBearing(b1), this.azimuthToBearing(b2));
 
@@ -297,7 +318,7 @@ export class Utils {
 
         // Arc alpha
         let arc_alpha: Feature;
-        const alpha_to_bearing = this.azimuthToBearing(this.alpha);
+        const alpha_to_bearing = this.azimuthToBearing(antenna.angleOfView.angleCenter);
         if (alpha_to_bearing >= 0) {
             arc_alpha = this.toFeature(lineArc(this.toTurf(antenna), this.maxDistance,
         0, alpha_to_bearing));
@@ -307,9 +328,8 @@ export class Utils {
         }
         arc_alpha.setStyle(new Style({
             text: new Text({
-                text: Math.abs(round(this.azimuthToBearing(this.alpha), 2)) + '°',
+                text: Math.abs(round(this.azimuthToBearing(antenna.angleOfView.angleCenter), 2)) + '°',
                 scale: 1.2,
-                rotation:  this.alpha,
                 fill: new Fill({
                     color: '#f1c40f'
                 }),
@@ -325,15 +345,14 @@ export class Utils {
         }));
 
         // arc angle of view
-        const b1 = this.alpha - (antenna.angleOfView.angle / 2);
-        const b2 = this.alpha + (antenna.angleOfView.angle / 2);
+        const b1 = antenna.angleOfView.angleCenter - (antenna.angleOfView.angleRange / 2);
+        const b2 = antenna.angleOfView.angleCenter + (antenna.angleOfView.angleRange / 2);
         const arc_angle_view = this.toFeature(lineArc(this.toTurf(antenna), this.maxDistance * 0.25,
         this.azimuthToBearing(b1), this.azimuthToBearing(b2)));
         arc_angle_view.setStyle(new Style({
             text: new Text({
-                text: Math.abs(round(this.azimuthToBearing(antenna.angleOfView.angle), 2)) + '°',
+                text: Math.abs(round(antenna.angleOfView.angleRange, 2)) + '°',
                 scale: 1.2,
-                rotation:  this.alpha,
                 fill: new Fill({
                     color: '#f1c40f'
                 }),
@@ -362,9 +381,12 @@ export class Utils {
         map.getLayers().forEach(ly => {
             if (ly.get('name') !== 'bing') {
                 Extent.extend(extent, ly.getSource().getExtent());
-                console.log(ly.get('name'));
             }
          });
         map.getView().fit(extent);
+    }
+
+    clear(map: Map) {
+        map.getLayers().forEach(ly => map.removeLayer(ly));
     }
 }

@@ -8,7 +8,11 @@
         <button type="button" class="btn btn-danger" (click)="onRemove()">Supprimer</button>
     </div>
 </clr-modal>
-<clr-wizard #wizardlg [(clrWizardOpen)]="addModal" clrWizardSize="lg">
+<clr-wizard #wizardlg [(clrWizardOpen)]="addModal" 
+    clrWizardSize="xl"
+    clrWizardForceForwardNavigation="true"
+    clrWizardDisableStepnav="false"
+    >
     <clr-wizard-title>Ajout d'une antenne</clr-wizard-title>
     <!-- {{ diagnostic }} -->
     <clr-wizard-button [type]="'cancel'">Annuler</clr-wizard-button>
@@ -16,7 +20,7 @@
     <clr-wizard-button [type]="'next'">Suivant</clr-wizard-button>
     <clr-wizard-button [type]="'finish'">Ajouter</clr-wizard-button>
 
-    <clr-wizard-page [clrWizardPageNextDisabled]="!antennaForm.valid">
+    <clr-wizard-page [clrWizardPageNextDisabled]="!antennaForm.valid" (clrWizardPageNext)="updateFreq()">
         <ng-template clrPageTitle>Caractéristiques</ng-template>
         <div class="alert alert-warning">
             <div class="alert-items">
@@ -30,7 +34,7 @@
                 </div>
             </div>
         </div>
-        <form class="compact" #antennaForm="ngForm">
+        <form #antennaForm="ngForm" >
             <div class="form-group row">
                 <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
                     <label for="nom"
@@ -49,9 +53,9 @@
                 </div>
                 <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
                     <div class="select form-control">
-                        <select id="freq2">
-                            <option>KHz</option>
-                            <option>MHz</option>
+                        <select id="freq2" [(ngModel)]="frequencyChoosed" name="freqSelect">
+                            <option value="1">MHz</option>
+                            <option value="0.001">KHz</option>
                         </select>
                     </div>
                 </div>
@@ -72,7 +76,7 @@
                     <label for="angle">Angle d'ouverture</label>
                 </div>
                 <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
-                    <input class="form-control" required type="number" id="angle" placeholder="Angle d'ouverture.." size="45" [(ngModel)]="model.angleOfView.angle" name="angle">
+                    <input class="form-control" required type="number" id="angle" placeholder="Angle d'ouverture.." size="45" [(ngModel)]="model.angleOfView.angleRange" name="angle">
                 </div>
             </div>
         </form>
@@ -94,7 +98,7 @@
             </div>
         </div>
 
-        <form class="compact" #poiForm="ngForm">
+        <form #poiForm="ngForm">
             <button class="btn" (click)="onAddNewPoi()">Ajouter nouveau</button>
             <button class="btn" (click)="model.poiList.pop()">Supprimer dernier</button>
             <section class="form-block" *ngFor="let poi of model.poiList; let i = index">
@@ -128,9 +132,39 @@
 
     <clr-wizard-page>
         <ng-template clrPageTitle>Calibration</ng-template>
-        <div id="map">
-                        
+        <div class="row">
+            <div class="col-lg-7 col-md-12 col-sm-12 col-xs-12 card card-block">
+                <div class="card-text" id="map"></div>
+            </div>
+            <div class="col-lg-5 col-md-12 col-sm-12 col-xs-12">
+                <form #calibrationForm="ngForm" >
+                        <section class="form-block">
+                            <label>
+                                Orientation de l'antenne 
+                            </label>
+                            <div class="form-group row">
+                                <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+                                    <label for="nom"
+                                    >Angle du point central</label>
+                                </div>
+                                <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                                    <input class="form-control" minlength="2" required type="number" id="nom" size="45"  
+                                    name="angle" [(ngModel)]="model.angleOfView.angleCenter" (change)="onChange()" [disabled]="model.angleOfView.angleRange % 360 === 0">
+                                </div>
+                            </div>
+                        </section>
+                </form>
+                <ul class="list">
+                    <li>Azimuth minimal des POIs: <strong>{{ utils.minAzimuth }}°</strong></li>
+                    <li>Azimuth maximal des POIs: <strong>{{ utils.maxAzimuth }}°</strong></li>
+                    <li>Point central: <strong>{{ utils.coords[1] + ' ' + utils.coords[0]}}</strong></li>
+                    <li>Azimuth départ: <strong>{{ utils.azimuthDepart }}</strong></li>
+                    <li>Azimuth arrivée: <strong>{{ utils.azimuthArrivee }}</strong></li>
+                </ul>
+            </div>
         </div>
+        
+        
     </clr-wizard-page>
     <clr-wizard-page>
         <ng-template clrPageTitle>Enregistrement</ng-template>
@@ -143,7 +177,7 @@
       <clr-icon shape="plus"></clr-icon>
       Ajouter antenne
   </button>
-  <button class="btn btn-icon" (click)="getHeroes()">
+  <button class="btn btn-icon" (click)="getAntennas()">
       <clr-icon shape="refresh"></clr-icon>
     Recharger données
   </button>
@@ -162,8 +196,8 @@
         <clr-dg-cell>{{antenna.name}}</clr-dg-cell>
         <clr-dg-cell>{{antenna.frequency}}</clr-dg-cell>
         <clr-dg-cell>
-            <span *ngIf="antenna.angleOfView" class="label label-info">Directionnelle</span>
-            <span *ngIf="!antenna.angleOfView" class="label label-success">Omnidirectionnelle</span>
+            <span *ngIf="antenna.angleOfView.angleRange % 360 === 0" class="label label-info">Omnidirectionnelle</span>
+            <span *ngIf="antenna.angleOfView.angleRange % 360 !== 0" class="label label-success">Directionnelle</span>
         </clr-dg-cell>
         <clr-dg-cell>{{antenna.totalPois}}</clr-dg-cell>
         <clr-dg-cell>{{antenna.createdAt | date}}</clr-dg-cell>
