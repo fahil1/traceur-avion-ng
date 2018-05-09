@@ -1,0 +1,179 @@
+<clr-modal [(clrModalOpen)]="deleteModal">
+    <h3 class="modal-title">Supprimer {{ selected.name }}</h3>
+    <div class="modal-body">
+        <p>Souhaitez-vous vraiment supprimer l'antenne nommée <strong>{{ selected.name }}</strong>? Cette action est permanente.</p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="deleteModal = false">Annuler</button>
+        <button type="button" class="btn btn-danger" (click)="onRemove()">Supprimer</button>
+    </div>
+</clr-modal>
+<clr-wizard #wizardlg [(clrWizardOpen)]="addModal" clrWizardSize="lg">
+    <clr-wizard-title>Ajout d'une antenne</clr-wizard-title>
+    <!-- {{ diagnostic }} -->
+    <clr-wizard-button [type]="'cancel'">Annuler</clr-wizard-button>
+    <clr-wizard-button [type]="'previous'">Retour</clr-wizard-button>
+    <clr-wizard-button [type]="'next'">Suivant</clr-wizard-button>
+    <clr-wizard-button [type]="'finish'">Ajouter</clr-wizard-button>
+
+    <clr-wizard-page [clrWizardPageNextDisabled]="!antennaForm.valid">
+        <ng-template clrPageTitle>Caractéristiques</ng-template>
+        <div class="alert alert-warning">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-triangle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                        La position et l'angle d'ouverture doivent être en degré décimal.
+                    </span>
+                </div>
+            </div>
+        </div>
+        <form class="compact" #antennaForm="ngForm">
+            <div class="form-group row">
+                <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
+                    <label for="nom"
+                    >Nom</label>
+                </div>
+                <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                    <input class="form-control" minlength="2" required type="text" id="nom" placeholder="Nom.." size="45" [(ngModel)]="model.name" name="name">
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
+                    <label for="freq1">Fréquence</label>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                    <input class="form-control" required type="number" minlength="4" id="freq1" placeholder="Fréquence.." size="45" [(ngModel)]="model.frequency" name="frequency">
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
+                    <div class="select form-control">
+                        <select id="freq2">
+                            <option>KHz</option>
+                            <option>MHz</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
+                    <label for="latitude">Position</label>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                    <input class="form-control" required type="number" id="latitude" placeholder="Latitude.." size="45" [(ngModel)]="model.position[1]" name="latitude">
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                    <input class="form-control" required type="number" id="longitude" placeholder="Longitude.." size="45" [(ngModel)]="model.position[0]" name="longitude">
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
+                    <label for="angle">Angle d'ouverture</label>
+                </div>
+                <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12">
+                    <input class="form-control" required type="number" id="angle" placeholder="Angle d'ouverture.." size="45" [(ngModel)]="model.angleOfView.angle" name="angle">
+                </div>
+            </div>
+        </form>
+    </clr-wizard-page>
+
+    <clr-wizard-page [clrWizardPageNextDisabled]="!poiForm.valid" #poiPage (clrWizardPageNext)="calibrate()">
+        <ng-template clrPageTitle>Points d'intérêt</ng-template>
+        
+        <div class="alert alert-warning">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-triangle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                        La position doit être en degré décimal.
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <form class="compact" #poiForm="ngForm">
+            <button class="btn" (click)="onAddNewPoi()">Ajouter nouveau</button>
+            <button class="btn" (click)="model.poiList.pop()">Supprimer dernier</button>
+            <section class="form-block" *ngFor="let poi of model.poiList; let i = index">
+              <label>
+                Point d'intérêt N° {{ i+1 }} 
+              </label>
+              <div class="form-group row">
+                  <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
+                      <label for="nom"
+                      >Nom</label>
+                  </div>
+                  <div class="col-lg-5 col-md-5 col-sm-12 col-xs-12">
+                      <input class="form-control" required type="text" placeholder="Nom.." size="45" [(ngModel)]="model.poiList[i].name" name="{{ 'name' + (i+1) }}">
+                  </div>
+              </div>
+              <div class="form-group row">
+                  <div class="col-lg-3 col-md-12 col-sm-12 col-xs-12">
+                      <label for="latitude">Position</label>
+                  </div>
+                  <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                      <input class="form-control" required type="number" placeholder="Latitude.." size="45" [(ngModel)]="model.poiList[i].position[1]" name="{{'latitude'+ (i+1)}}">
+                  </div>
+                  <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                      <input class="form-control" required type="text" placeholder="Longitude.." size="45" [(ngModel)]="model.poiList[i].position[0]" name="{{'longitude'+ (i+1)}}">
+                  </div>
+              </div>
+
+            </section>
+        </form>
+    </clr-wizard-page>
+
+    <clr-wizard-page>
+        <ng-template clrPageTitle>Calibration</ng-template>
+        <div id="map">
+                        
+        </div>
+    </clr-wizard-page>
+    <clr-wizard-page>
+        <ng-template clrPageTitle>Enregistrement</ng-template>
+        ...
+    </clr-wizard-page>
+</clr-wizard>
+<span class="spinner" *ngIf="!ajaxCompleted"></span>
+<div *ngIf="ajaxCompleted">
+  <button class="btn btn-icon" (click)="addModal=true">
+      <clr-icon shape="plus"></clr-icon>
+      Ajouter antenne
+  </button>
+  <button class="btn btn-icon" (click)="getHeroes()">
+      <clr-icon shape="refresh"></clr-icon>
+    Recharger données
+  </button>
+  <clr-datagrid>
+    <clr-dg-column [clrDgField]="'name'">Nom</clr-dg-column>
+    <clr-dg-column [clrDgField]="'frequency'">Fréquence (MHz)</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="typeAntennaComparator">Type</clr-dg-column>
+    <clr-dg-column [clrDgField]="'totalPois'">Total des points d'intérêt</clr-dg-column>
+    <clr-dg-column [clrDgField]="'createdAt'">Date de création</clr-dg-column>
+
+    <clr-dg-row *clrDgItems="let antenna of antennas" [clrDgItem]="antenna">
+        <clr-dg-action-overflow>
+            <button class="action-item" (click)="selected = antenna;">Modifier</button>
+            <button class="action-item" (click)="selected = antenna; deleteModal = true">Supprimer</button>
+        </clr-dg-action-overflow>
+        <clr-dg-cell>{{antenna.name}}</clr-dg-cell>
+        <clr-dg-cell>{{antenna.frequency}}</clr-dg-cell>
+        <clr-dg-cell>
+            <span *ngIf="antenna.angleOfView" class="label label-info">Directionnelle</span>
+            <span *ngIf="!antenna.angleOfView" class="label label-success">Omnidirectionnelle</span>
+        </clr-dg-cell>
+        <clr-dg-cell>{{antenna.totalPois}}</clr-dg-cell>
+        <clr-dg-cell>{{antenna.createdAt | date}}</clr-dg-cell>
+    </clr-dg-row>
+
+    <clr-dg-footer>
+        <clr-dg-pagination #pagination [clrDgPageSize]="7">
+            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+            de {{pagination.totalItems}} antennes
+        </clr-dg-pagination>
+    </clr-dg-footer>
+  </clr-datagrid>
+</div>
