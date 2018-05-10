@@ -130,11 +130,19 @@
         </form>
     </clr-wizard-page>
 
-    <clr-wizard-page>
+    <clr-wizard-page [clrWizardPageNextDisabled]="!calibrationForm.valid">
         <ng-template clrPageTitle>Calibration</ng-template>
         <div class="row">
-            <div class="col-lg-7 col-md-12 col-sm-12 col-xs-12 card card-block">
-                <div class="card-text" id="map"></div>
+            <div class="col-lg-7 col-md-12 col-sm-12 col-xs-12">
+                <div class="card">
+                        <div class="card-block">
+                            <div class="card-text">
+                                <div class="progress" [class.loop]="!renderCompleted"><progress></progress></div>
+                                <div id="map"></div>
+                            </div>
+                        </div>
+                </div>
+                
             </div>
             <div class="col-lg-5 col-md-12 col-sm-12 col-xs-12">
                 <form #calibrationForm="ngForm" >
@@ -157,9 +165,11 @@
                 <ul class="list">
                     <li>Azimuth minimal des POIs: <strong>{{ utils.minAzimuth }}°</strong></li>
                     <li>Azimuth maximal des POIs: <strong>{{ utils.maxAzimuth }}°</strong></li>
-                    <li>Point central: <strong>{{ utils.coords[1] + ' ' + utils.coords[0]}}</strong></li>
-                    <li>Azimuth départ: <strong>{{ utils.azimuthDepart }}</strong></li>
-                    <li>Azimuth arrivée: <strong>{{ utils.azimuthArrivee }}</strong></li>
+                    <li>Point central: <strong>{{ utils.coords[1] + '° ' + utils.coords[0]}}°</strong></li>
+                    <li>Azimuth départ: <strong>{{ utils.azimuthDepart }}°</strong></li>
+                    <li>Azimuth arrivée: <strong>{{ utils.azimuthArrivee }}°</strong></li>
+                    <li>*exp*: <strong>{{ utils.exp }}°</strong></li>
+                    
                 </ul>
             </div>
         </div>
@@ -167,11 +177,46 @@
         
     </clr-wizard-page>
     <clr-wizard-page>
-        <ng-template clrPageTitle>Enregistrement</ng-template>
-        ...
+        <ng-template clrPageTitle>Récapitulatif</ng-template>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Decimal</th>
+                    <th>Hexadecimal</th>
+                    <th>Binary</th>
+                    <th>Roman Numeral</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>I</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>5</td>
+                    <td>101</td>
+                    <td>V</td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>A</td>
+                    <td>1010</td>
+                    <td>X</td>
+                </tr>
+                <tr>
+                    <td>15</td>
+                    <td>F</td>
+                    <td>1111</td>
+                    <td>XV</td>
+                </tr>
+            </tbody>
+        </table>
     </clr-wizard-page>
 </clr-wizard>
-<span class="spinner" *ngIf="!ajaxCompleted"></span>
+<span class="spinner" *ngIf="!ajaxCompleted" id="spinnerGlobal"></span>
 <div *ngIf="ajaxCompleted">
   <button class="btn btn-icon" (click)="addModal=true">
       <clr-icon shape="plus"></clr-icon>

@@ -35,6 +35,7 @@ export class AntennasComponent implements OnInit {
   addModal = false;
   isMapCreated = false;
   frequencyChoosed: number = 1;
+  renderCompleted = true;
 
   selected: Antenna = new Antenna();
   model: Antenna = new Antenna();
@@ -48,7 +49,7 @@ export class AntennasComponent implements OnInit {
   ) {
     this.model.name = 'Agadir test';
     this.model.position = [-9.414388, 30.332335];
-    this.model.angleOfView.angleRange = 120;
+    this.model.angleOfView.angleRange = 26;
     this.model.frequency = 124.4;
     this.model.poiList[0].name = 'KONBA';
     this.model.poiList[0].position = [-15.30167, 31.30083];
@@ -64,6 +65,25 @@ export class AntennasComponent implements OnInit {
     this.model.poiList[2].name = 'OSDIV';
     this.model.poiList[2].position = [-13.83611, 33.14944];
     // this.model.poiList[2].position = [-9.250278, 30.2875];
+
+    this.model.poiList.push(new Poi());
+    this.model.poiList.push(new Poi());
+    this.model.poiList.push(new Poi());
+    this.model.poiList.push(new Poi());
+
+    this.model.poiList[3].name = 'SAMAR';
+    this.model.poiList[3].position = [-14.41556, 30.89972];
+
+    this.model.poiList[4].name = 'MITLA';
+    this.model.poiList[4].position = [-14.08222, 31.30833];
+
+    this.model.poiList[5].name = 'ABTIR';
+    this.model.poiList[5].position = [-12.80167, 32.84889];
+
+    this.model.poiList[6].name = 'NEVTU';
+    this.model.poiList[6].position = [-13.24472, 32.97861];
+
+
 
    }
 
@@ -96,11 +116,18 @@ export class AntennasComponent implements OnInit {
   }
 
   onChange() {
-    setTimeout(_ => this.utils.renderMap(this.map, this.model, false), 500);
+    if (this.model.angleOfView.angleCenter) {
+      this.renderCompleted = false;
+      setTimeout(_ => {
+        this.utils.renderMap(this.map, this.model, false);
+        this.renderCompleted = true;
+      }, 1000);
+    }
   }
 
   calibrate() {
     this.model.totalPois = this.model.poiList.length;
+    this.renderCompleted = false;
     setTimeout(_ => {
       if (!this.isMapCreated) {
         this.map = new Map({
@@ -112,7 +139,8 @@ export class AntennasComponent implements OnInit {
         this.isMapCreated = true;
       }
       this.utils.renderMap(this.map, this.model, true);
-    }, 500);
+      this.renderCompleted = true;
+    }, 1000);
   }
   updateFreq() {
     this.model.frequency = round(this.model.frequency * this.frequencyChoosed, 2);

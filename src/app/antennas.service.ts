@@ -42,10 +42,16 @@ export class AntennasService {
     );
   }
 
-  removeAntenna(antenna: Antenna | number) {
+  removeAntenna(antenna: Antenna | number): Observable<Antenna> {
     const id = typeof antenna === 'number' ? antenna : antenna.id;
     const url = `${this.antennasUrl}/${id}`;
 
     return this.http.delete<Antenna>(url, this.httpOptions).pipe(catchError(this.handleError<Antenna>('removeAntenna')));
+  }
+
+  saveAntenna(antenna: Antenna): Observable<Antenna> {
+    return this.http.post<Antenna>(this.antennasUrl, antenna, this.httpOptions).pipe(
+      catchError(this.handleError<Antenna>('addAntenna'))
+    );
   }
 }
