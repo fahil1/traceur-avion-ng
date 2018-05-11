@@ -139,48 +139,6 @@ export class AntennasComponent implements OnInit {
   onAddClick() {
     this.mode = 'add';
     this.model = new Antenna();
-    this.model.name = 'Agadir test';
-    this.model.position = [-9.634478, 30.43599];
-    this.model.angleOfView.angleRange = 26;
-    this.model.frequency = 124.4;
-    this.model.poiList[0].name = 'KONBA';
-    this.model.poiList[0].position = [-15.30167, 31.30083];
-    // this.model.poiList[0].position = [-9.123889, 30.60944];
-
-    this.model.poiList.push(new Poi());
-    this.model.poiList.push(new Poi());
-
-    this.model.poiList[1].name = 'LEPRU';
-    this.model.poiList[1].position = [-14.80111, 32];
-    // this.model.poiList[1].position = [-9.178889, 30.45333];
-
-    this.model.poiList[2].name = 'OSDIV';
-    this.model.poiList[2].position = [-13.83611, 33.14944];
-    // this.model.poiList[2].position = [-9.250278, 30.2875];
-
-    this.model.poiList.push(new Poi());
-    this.model.poiList.push(new Poi());
-    this.model.poiList.push(new Poi());
-    this.model.poiList.push(new Poi());
-    this.model.poiList.push(new Poi());
-
-    this.model.poiList[3].name = 'SAMAR';
-    this.model.poiList[3].position = [-14.41556, 30.89972];
-
-    this.model.poiList[4].name = 'MITLA';
-    this.model.poiList[4].position = [-14.08222, 31.30833];
-
-    this.model.poiList[5].name = 'ABTIR';
-    this.model.poiList[5].position = [-12.80167, 32.84889];
-
-    this.model.poiList[6].name = 'NEVTU';
-    this.model.poiList[6].position = [-13.24472, 32.97861];
-
-    this.model.poiList[7].name = 'KUBIL';
-    this.model.poiList[7].position = [-12.91167, 34.26111];
-
-    this.model.poiList[7].name = 'OGDOR';
-    this.model.poiList[7].position = [-13.42722, 34];
 
     this.addModal = true;
   }
