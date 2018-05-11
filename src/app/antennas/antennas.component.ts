@@ -70,6 +70,7 @@ export class AntennasComponent implements OnInit {
     this.model.poiList.push(new Poi());
     this.model.poiList.push(new Poi());
     this.model.poiList.push(new Poi());
+    this.model.poiList.push(new Poi());
 
     this.model.poiList[3].name = 'SAMAR';
     this.model.poiList[3].position = [-14.41556, 30.89972];
@@ -83,6 +84,11 @@ export class AntennasComponent implements OnInit {
     this.model.poiList[6].name = 'NEVTU';
     this.model.poiList[6].position = [-13.24472, 32.97861];
 
+    this.model.poiList[7].name = 'KUBIL';
+    this.model.poiList[7].position = [-12.91167, 34.26111];
+
+    this.model.poiList[7].name = 'OGDOR';
+    this.model.poiList[7].position = [-13.42722, 34];
 
 
    }

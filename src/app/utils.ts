@@ -411,7 +411,7 @@ export class Utils {
         const aux2 = bearingToAzimuth(bearing(this.toTurf(antenna), n1));
 
         const n2 = destination(this.toTurf(osdiv), 60 * 1.852, azimuth_s1);
-        
+
         const s2 = destination(this.toTurf(konba), 60 * 1.852, azimuth_s1);
 
         this.exp = aux2 - aux1;
@@ -424,6 +424,8 @@ export class Utils {
             })
         });
         map.addLayer(layer);
+        console.log(distance(this.toTurf(antenna.poiList[7]), this.toTurf(antenna.poiList[2])) * 0.539957);
+        console.log(distance(this.toTurf(antenna.poiList[7]), this.toTurf(antenna.poiList[2])));
 
     }
 }
