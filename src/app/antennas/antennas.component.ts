@@ -30,7 +30,7 @@ class TypeAntennaComparator implements ClrDatagridComparatorInterface<Antenna> {
   styleUrls: ['./antennas.component.css']
 })
 export class AntennasComponent implements OnInit {
-  // @ViewChild('')
+  @ViewChild('wizardlg') wizard: Wizard;
   antennas: Antenna[];
   ajaxCompleted = false;
   deleteModal = false;
@@ -144,6 +144,7 @@ export class AntennasComponent implements OnInit {
   }
 
   onUpdateClick() {
+    this.wizard.reset();
     this.mode = 'update';
     this.model = cloneDeep(this.selected);
     this.addModal = true;

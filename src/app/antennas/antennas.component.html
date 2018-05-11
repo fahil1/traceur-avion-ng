@@ -245,7 +245,7 @@
 
     <clr-dg-row *clrDgItems="let antenna of antennas" [clrDgItem]="antenna">
         <clr-dg-action-overflow>
-            <button class="action-item" (click)="selected = antenna;  onUpdateClick();">Modifier</button>
+            <button class="action-item" (click)="selected = antenna;  onUpdateClick();">Voir / Modifier</button>
             <button class="action-item" (click)="selected = antenna; deleteModal = true">Supprimer</button>
         </clr-dg-action-overflow>
         <clr-dg-cell>{{antenna.name}}</clr-dg-cell>
