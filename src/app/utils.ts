@@ -35,7 +35,6 @@ export class Utils {
     public coords: number[] = [0, 0];
     public azimuthDepart: number = 0;
     public azimuthArrivee: number= 0;
-    public exp = 0;
 
     constructor() {
 
@@ -121,12 +120,7 @@ export class Utils {
 
     renderMap(map: Map, antenna: Antenna, calcAngleCenter: boolean) {
         this.clear(map);
-        // const layer = new Tile({
-        //     source: new BingMaps({
-        //         key: 'Aj_lt5oGlcTzENwKBowFxOxF8JwHR8eaxf66ufX0WfSYs8rGrny5JfIv0Cp1ODT4',
-        //         imagerySet: 'RoadOnDemand'
-        //     })
-        // });
+
         const layer = new Tile({
             source: new OSM()
         });
@@ -144,7 +138,6 @@ export class Utils {
         }
 
         this.roundAll();
-        this.experimentation(map, antenna);
         map.updateSize();
     }
 
@@ -395,37 +388,5 @@ export class Utils {
 
     clear(map: Map) {
         map.getLayers().forEach(ly => map.removeLayer(ly));
-    }
-
-    experimentation(map: Map, antenna: Antenna) {
-        const konba = antenna.poiList[0];
-        const lepru = antenna.poiList[1];
-        const osdiv = antenna.poiList[2];
-
-        const azimuth_s1 = bearing(this.toTurf(konba), this.toTurf(osdiv));
-        const s1 = destination(this.toTurf(konba), 40 * 1.852, azimuth_s1);
-
-        const aux1 = bearingToAzimuth(bearing(this.toTurf(antenna), s1));
-
-        const n1 = destination(this.toTurf(osdiv), 40 * 1.852, azimuth_s1);
-        const aux2 = bearingToAzimuth(bearing(this.toTurf(antenna), n1));
-
-        const n2 = destination(this.toTurf(osdiv), 60 * 1.852, azimuth_s1);
-
-        const s2 = destination(this.toTurf(konba), 60 * 1.852, azimuth_s1);
-
-        this.exp = aux2 - aux1;
-        console.log(this.exp);
-
-
-        const layer = new Vector({
-            source: new Source({
-                features: [this.toFeature(s1), this.toFeature(n1), this.toFeature(n2), this.toFeature(s2)]
-            })
-        });
-        map.addLayer(layer);
-        console.log(distance(this.toTurf(antenna.poiList[7]), this.toTurf(antenna.poiList[2])) * 0.539957);
-        console.log(distance(this.toTurf(antenna.poiList[7]), this.toTurf(antenna.poiList[2])));
-
     }
 }
