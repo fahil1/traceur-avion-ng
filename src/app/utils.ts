@@ -18,6 +18,7 @@ import Fill from 'ol/style/fill';
 import Icon from 'ol/style/icon';
 import Extent from 'ol/extent';
 import OSM from 'ol/source/osm';
+import XYZ from 'ol/source/xyz';
 
 
 import Vector from 'ol/layer/vector';
@@ -40,9 +41,20 @@ export class Utils {
     public maxDistancePoi: Poi;
     public maxAzimuthPoi: Poi;
     public minAzimuthPoi: Poi;
+    public moroccoLayer: Vector = null;
 
     constructor() {
 
+    }
+
+    offlineMap(map: Map) {
+        const ly = new Tile({
+            source: new XYZ({
+                url: 'assets/tiles/{z}/{x}/{y}.png'
+            })
+        });
+        ly.set('name', 'offline');
+        map.addLayer(ly);
     }
 
     roundAll() {
@@ -125,13 +137,12 @@ export class Utils {
 
     renderMap(map: Map, antenna: Antenna, calcAngleCenter: boolean) {
         this.clear(map);
-
-        const layer = new Tile({
-            source: new OSM()
-        });
-        layer.set('name', 'bing');
-        map.addLayer(layer);
-
+        this.offlineMap(map);
+        // const layer = new Tile({
+        //     source: new OSM()
+        // });
+        // layer.set('name', 'bing');
+        // map.addLayer(layer);
         this.hydratePoisByDistanceAndBearing(antenna, calcAngleCenter);
         this.renderSector(map, antenna);
         this.renderDestination(map, antenna);
@@ -384,7 +395,7 @@ export class Utils {
         // Zoom to extent
         const extent = Extent.createEmpty();
         map.getLayers().forEach(ly => {
-            if (ly.get('name') !== 'bing') {
+            if (ly.get('name') !== 'offline') {
                 Extent.extend(extent, ly.getSource().getExtent());
             }
          });

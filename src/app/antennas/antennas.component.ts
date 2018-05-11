@@ -4,6 +4,9 @@ import { round } from '@turf/turf';
 import Map from 'ol/map';
 import View from 'ol/view';
 import cloneDeep from 'lodash/cloneDeep';
+import Zoom from 'ol/control/zoom';
+import Rotate from 'ol/control/rotate';
+import Attribution from 'ol/control/attribution';
 
 
 
@@ -98,8 +101,13 @@ export class AntennasComponent implements OnInit {
       if (!this.isMapCreated) {
         this.map = new Map({
             view: new View({
-              projection: 'EPSG:4326'
+              projection: 'EPSG:4326',
+              minZoom: 5,
+              maxZoom: 11
             }),
+            controls: [
+              new Zoom()
+            ],
             target: 'map'
         });
         this.isMapCreated = true;
