@@ -36,6 +36,11 @@ export class Utils {
     public azimuthDepart: number = 0;
     public azimuthArrivee: number= 0;
 
+    // added
+    public maxDistancePoi: Poi;
+    public maxAzimuthPoi: Poi;
+    public minAzimuthPoi: Poi;
+
     constructor() {
 
     }
@@ -137,7 +142,7 @@ export class Utils {
             this.zoomToExtent(map);
         }
 
-        this.roundAll();
+        // this.roundAll();
         map.updateSize();
     }
 
@@ -148,7 +153,7 @@ export class Utils {
                 src: 'assets/antenna.png'
             }),
             text: new Text({
-                text: antenna.name + ' ' + antenna.frequency + ' MHz',
+                text: antenna.name,
                 fill: new Fill({
                     color: '#00FF00'
                 }),

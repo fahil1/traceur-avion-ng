@@ -26,6 +26,7 @@
     "@turf/turf": "^5.1.6",
     "@webcomponents/custom-elements": "^1.0.0",
     "core-js": "^2.5.4",
+    "lodash": "^4.17.10",
     "ol": "^4.6.5",
     "rxjs": "^6.0.0",
     "rxjs-compat": "^6.1.0",

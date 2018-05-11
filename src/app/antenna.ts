@@ -15,5 +15,6 @@ export class Antenna {
         this.position = [null, null];
         this.poiList = [new Poi()];
         this.angleOfView = new AngleOfView();
+        this.createdAt = new Date();
     }
 }

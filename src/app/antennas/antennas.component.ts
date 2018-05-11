@@ -3,6 +3,7 @@ import { ClrDatagridComparatorInterface, Wizard } from '@clr/angular';
 import { round } from '@turf/turf';
 import Map from 'ol/map';
 import View from 'ol/view';
+import cloneDeep from 'lodash/cloneDeep';
 
 
 
@@ -29,6 +30,7 @@ class TypeAntennaComparator implements ClrDatagridComparatorInterface<Antenna> {
   styleUrls: ['./antennas.component.css']
 })
 export class AntennasComponent implements OnInit {
+  // @ViewChild('')
   antennas: Antenna[];
   ajaxCompleted = false;
   deleteModal = false;
@@ -36,6 +38,8 @@ export class AntennasComponent implements OnInit {
   isMapCreated = false;
   frequencyChoosed: number = 1;
   renderCompleted = true;
+
+  mode = 'add';
 
   selected: Antenna = new Antenna();
   model: Antenna = new Antenna();
@@ -46,9 +50,97 @@ export class AntennasComponent implements OnInit {
 
   constructor(
     private antennasService: AntennasService,
-  ) {
+  ) {}
+
+  ngOnInit() {
+    this.getAntennas();
+  }
+
+  getAntennas() {
+    this.ajaxCompleted = false;
+    this.antennasService.getAntennas().subscribe(t => {
+      this.antennas = t;
+      this.ajaxCompleted = true;
+    });
+  }
+
+  onRemove() {
+    this.antennasService.removeAntenna(this.selected).subscribe(_ => {
+        this.deleteModal = false;
+        this.antennas = this.antennas.filter(el => el !== this.selected);
+      }
+    );
+  }
+
+  get diagnostic() {
+    return JSON.stringify(this.model);
+  }
+
+  onAddNewPoi() {
+    this.model.poiList.push(new Poi());
+  }
+
+  onChange() {
+    if (this.model.angleOfView.angleCenter) {
+      this.model.angleOfView.angleCenter = this.correctAngle(this.model.angleOfView.angleCenter);
+      this.renderCompleted = false;
+      setTimeout(_ => {
+        this.utils.renderMap(this.map, this.model, false);
+        this.renderCompleted = true;
+      }, 1000);
+    }
+  }
+
+  calibrate() {
+    this.model.totalPois = this.model.poiList.length;
+    this.renderCompleted = false;
+    setTimeout(_ => {
+      if (!this.isMapCreated) {
+        this.map = new Map({
+            view: new View({
+              projection: 'EPSG:4326'
+            }),
+            target: 'map'
+        });
+        this.isMapCreated = true;
+      }
+      this.utils.renderMap(this.map, this.model, true);
+      this.renderCompleted = true;
+    }, 1000);
+  }
+  updateFreq() {
+    this.model.frequency = round(this.model.frequency * this.frequencyChoosed, 2);
+    this.model.angleOfView.angleRange = this.correctAngle(this.model.angleOfView.angleRange);
+  }
+
+  correctAngle(angle: number) {
+    while (angle > 360) {
+      angle = angle - 360;
+    }
+    return angle;
+  }
+
+  doFinish() {
+    this.ajaxCompleted = false;
+    if (this.mode === 'add') {
+      this.antennasService.saveAntenna(this.model).subscribe(_ => {
+        this.antennas.push(this.model);
+        this.model = new Antenna();
+        this.ajaxCompleted = true;
+      });
+    } else {
+      this.antennasService.updateAntenna(this.model).subscribe(_ => {
+        this.getAntennas();
+        this.ajaxCompleted = true;
+      });
+    }
+  }
+
+  onAddClick() {
+    this.mode = 'add';
+    this.model = new Antenna();
     this.model.name = 'Agadir test';
-    this.model.position = [-9.414388, 30.332335];
+    this.model.position = [-9.634478, 30.43599];
     this.model.angleOfView.angleRange = 26;
     this.model.frequency = 124.4;
     this.model.poiList[0].name = 'KONBA';
@@ -90,65 +182,14 @@ export class AntennasComponent implements OnInit {
     this.model.poiList[7].name = 'OGDOR';
     this.model.poiList[7].position = [-13.42722, 34];
 
-
-   }
-
-  ngOnInit() {
-    this.getAntennas();
+    this.addModal = true;
   }
 
-  getAntennas() {
-    this.ajaxCompleted = false;
-    this.antennasService.getAntennas().subscribe(t => {
-      this.antennas = t;
-      this.ajaxCompleted = true;
-    });
+  onUpdateClick() {
+    this.mode = 'update';
+    this.model = cloneDeep(this.selected);
+    this.addModal = true;
   }
 
-  onRemove() {
-    this.antennasService.removeAntenna(this.selected).subscribe(_ => {
-        this.deleteModal = false;
-        this.antennas = this.antennas.filter(el => el !== this.selected);
-      }
-    );
-  }
 
-  get diagnostic() {
-    return JSON.stringify(this.model);
-  }
-
-  onAddNewPoi() {
-    this.model.poiList.push(new Poi());
-  }
-
-  onChange() {
-    if (this.model.angleOfView.angleCenter) {
-      this.renderCompleted = false;
-      setTimeout(_ => {
-        this.utils.renderMap(this.map, this.model, false);
-        this.renderCompleted = true;
-      }, 1000);
-    }
-  }
-
-  calibrate() {
-    this.model.totalPois = this.model.poiList.length;
-    this.renderCompleted = false;
-    setTimeout(_ => {
-      if (!this.isMapCreated) {
-        this.map = new Map({
-            view: new View({
-              projection: 'EPSG:4326'
-            }),
-            target: 'map'
-        });
-        this.isMapCreated = true;
-      }
-      this.utils.renderMap(this.map, this.model, true);
-      this.renderCompleted = true;
-    }, 1000);
-  }
-  updateFreq() {
-    this.model.frequency = round(this.model.frequency * this.frequencyChoosed, 2);
-  }
 }
