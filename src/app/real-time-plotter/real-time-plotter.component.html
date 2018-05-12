@@ -1,3 +1,8 @@
-<p>
-  here we go
-</p>
+<span class="spinner" *ngIf="!ajaxCompleted" id="spinnerGlobal"></span>
+<div *ngIf="ajaxCompleted">
+  <div *ngFor="let antenna of antennas; let i = index">
+      <div>
+        
+      </div>
+  </div>
+</div>

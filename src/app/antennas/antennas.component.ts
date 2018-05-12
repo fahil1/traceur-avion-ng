@@ -5,8 +5,7 @@ import Map from 'ol/map';
 import View from 'ol/view';
 import cloneDeep from 'lodash/cloneDeep';
 import Zoom from 'ol/control/zoom';
-import Rotate from 'ol/control/rotate';
-import Attribution from 'ol/control/attribution';
+import Fullscreen from 'ol/control/fullscreen';
 
 
 
@@ -106,7 +105,8 @@ export class AntennasComponent implements OnInit {
               maxZoom: 11
             }),
             controls: [
-              new Zoom()
+              new Zoom(),
+              new Fullscreen()
             ],
             target: 'map'
         });
@@ -147,6 +147,7 @@ export class AntennasComponent implements OnInit {
   onAddClick() {
     this.mode = 'add';
     this.model = new Antenna();
+    this.wizard.reset();
 
     this.addModal = true;
   }
