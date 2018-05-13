@@ -2,3 +2,12 @@
     height: 520px;
     width: 100%;
 }
+
+#antennas-list {
+    width: 70%;
+    margin: auto;
+}
+
+.il-centered {
+    text-align: center;
+}
