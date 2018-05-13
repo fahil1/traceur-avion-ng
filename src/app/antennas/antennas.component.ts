@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ClrDatagridComparatorInterface, Wizard } from '@clr/angular';
 import { round } from '@turf/turf';
 import Map from 'ol/map';
@@ -9,8 +9,9 @@ import Fullscreen from 'ol/control/fullscreen';
 
 
 
+
 import { AntennasService } from '../antennas.service';
-import { Utils } from '../utils';
+import { UtilsImproved } from '../utils-improved';
 
 import { Antenna } from '../antenna';
 import { Poi } from '../poi';
@@ -33,11 +34,11 @@ class TypeAntennaComparator implements ClrDatagridComparatorInterface<Antenna> {
 })
 export class AntennasComponent implements OnInit {
   @ViewChild('wizardlg') wizard: Wizard;
+  @ViewChild('map') mapEl: ElementRef;
   antennas: Antenna[];
   ajaxCompleted = false;
   deleteModal = false;
   addModal = false;
-  isMapCreated = false;
   frequencyChoosed: number = 1;
   renderCompleted = true;
 
@@ -46,7 +47,7 @@ export class AntennasComponent implements OnInit {
   selected: Antenna = new Antenna();
   model: Antenna = new Antenna();
   private typeAntennaComparator = new TypeAntennaComparator();
-  private utils = new Utils();
+  private utils = new UtilsImproved();
 
   map: Map;
 
@@ -56,6 +57,23 @@ export class AntennasComponent implements OnInit {
 
   ngOnInit() {
     this.getAntennas();
+  }
+
+  createMap() {
+    if (!this.map) {
+      this.map = new Map({
+        view: new View({
+          projection: 'EPSG:4326',
+          minZoom: 5,
+          maxZoom: 11
+        }),
+        controls: [
+          new Zoom(),
+          new Fullscreen()
+        ],
+        target: this.mapEl.nativeElement
+    });
+    }
   }
 
   getAntennas() {
@@ -84,38 +102,21 @@ export class AntennasComponent implements OnInit {
 
   onChange() {
     if (this.model.angleOfView.angleCenter) {
-      this.model.angleOfView.angleCenter = this.correctAngle(this.model.angleOfView.angleCenter);
       this.renderCompleted = false;
-      setTimeout(_ => {
-        this.utils.renderMap(this.map, this.model, false);
-        this.renderCompleted = true;
-      }, 1000);
+      this.utils.renderMap(this.map, this.model, false);
+      this.renderCompleted = true;
     }
   }
 
   calibrate() {
+    this.createMap();
+    console.log(this.map);
     this.model.totalPois = this.model.poiList.length;
     this.renderCompleted = false;
-    setTimeout(_ => {
-      if (!this.isMapCreated) {
-        this.map = new Map({
-            view: new View({
-              projection: 'EPSG:4326',
-              minZoom: 5,
-              maxZoom: 11
-            }),
-            controls: [
-              new Zoom(),
-              new Fullscreen()
-            ],
-            target: 'map'
-        });
-        this.isMapCreated = true;
-      }
-      this.utils.renderMap(this.map, this.model, true);
-      this.renderCompleted = true;
-    }, 1000);
+    this.utils.renderMap(this.map, this.model, true);
+    this.renderCompleted = true;
   }
+
   updateFreq() {
     this.model.frequency = round(this.model.frequency * this.frequencyChoosed, 2);
     this.model.angleOfView.angleRange = this.correctAngle(this.model.angleOfView.angleRange);

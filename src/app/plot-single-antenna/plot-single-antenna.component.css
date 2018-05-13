@@ -1,0 +1,19 @@
+#map-interface {
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+    background-color: #7E8C8D;
+}
+
+#table-airplanes {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 30%;
+    z-index: 99999;
+}

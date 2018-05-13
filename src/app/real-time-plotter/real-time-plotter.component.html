@@ -1,44 +1,54 @@
-{{ array.length }}
-<div *ngFor="let airplane of array">
-        {{ airplane.call_sign }} {{ airplane.icao }} {{ airplane.speed }}
-    {{ airplane.altitude }}
-    {{ airplane.latitude }}
-    {{ airplane.longitude }}
-</div>
-<!-- <span class="spinner" *ngIf="!ajaxCompleted" id="spinnerGlobal"></span>
-<div *ngIf="ajaxCompleted" id="antennas-list">
-    <div *ngFor="let row of rows" class="row">
-        <div *ngFor="let antenna of row; let i = index" class="col-md-4 col-lg-4 col-xl-4 col-xs-12">
-            <div class="card clickable" (click)="selected = antenna">
-                <div class="card-block">
-                  <div class="card-title">
-                    {{ antenna.name }}
-                  </div>
-                  <div class="card-text">
-                      <table class="table table-vertical">
-                        <tbody>
-                            <tr>
-                                <th>Fréquence</th>
-                                <td>{{ antenna.frequency }} MHz</td>
-                            </tr>
-                            <tr>
-                                <th>Angle d'ouverture</th>
-                                <td>{{ antenna.angleOfView.angleRange | number:'1.1-2' }}°</td>
-                            </tr>
-                            <tr>
-                                <th>Angle du point central</th>
-                                <td>{{ antenna.angleOfView.angleCenter | number:'1.1-2' }}°</td>
-                            </tr>
-                            <tr>
-                                <th>Total POIs</th>
-                                <td>{{ antenna.totalPois }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                  </div>
+<div *ngIf="!selected">
+    <span class="spinner" *ngIf="!ajaxCompleted" id="spinnerGlobal"></span>
+    <div *ngIf="ajaxCompleted" id="antennas-list">
+        <div class="alert alert-info">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="info-circle"></clr-icon>
+                    </div>
+                    <span class="alert-text">Antennes chargées. Veuillez choisir l'antenne à visualiser !</span>
+                </div>
+            </div>
+        </div>
+        <div *ngFor="let row of rows" class="row">
+            <div *ngFor="let antenna of row; let i = index" class="col-md-4 col-lg-4 col-xl-4 col-xs-12">
+                <div class="card clickable" (click)="selected = antenna">
+                    <div class="card-block">
+                    <div class="card-title">
+                        {{ antenna.name }}
+                    </div>
+                    <div class="card-text">
+                        <table class="table table-vertical">
+                            <tbody>
+                                <tr>
+                                    <th>Fréquence</th>
+                                    <td>{{ antenna.frequency }} MHz</td>
+                                </tr>
+                                <tr>
+                                    <th>Angle d'ouverture</th>
+                                    <td>{{ antenna.angleOfView.angleRange | number:'1.1-2' }}°</td>
+                                </tr>
+                                <tr>
+                                    <th>Angle du point central</th>
+                                    <td>{{ antenna.angleOfView.angleCenter | number:'1.1-2' }}°</td>
+                                </tr>
+                                <tr>
+                                    <th>Total POIs</th>
+                                    <td>{{ antenna.totalPois }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div> -->
+</div>
+<div *ngIf="selected">
+    <app-plot-single-antenna [antenna]="selected" (back)="selected = null">
+
+    </app-plot-single-antenna>
+</div>

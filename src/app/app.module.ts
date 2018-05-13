@@ -14,6 +14,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { AntennasComponent } from './antennas/antennas.component';
 import { RecordingsComponent } from './recordings/recordings.component';
 import { AppRoutingModule } from './/app-routing.module';
+import { PlotSingleAntennaComponent } from './plot-single-antenna/plot-single-antenna.component';
 
 registerLocaleData(localeFr, 'fr');
 @NgModule({
@@ -23,6 +24,7 @@ registerLocaleData(localeFr, 'fr');
     DashboardComponent,
     AntennasComponent,
     RecordingsComponent,
+    PlotSingleAntennaComponent,
   ],
   imports: [
     BrowserModule,

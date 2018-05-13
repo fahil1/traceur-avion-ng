@@ -41,10 +41,26 @@ export class Utils {
     public maxDistancePoi: Poi;
     public maxAzimuthPoi: Poi;
     public minAzimuthPoi: Poi;
-    public moroccoLayer: Vector = null;
+
 
     constructor() {
 
+    }
+
+    renderMap(map: Map, antenna: Antenna, calcAngleCenter: boolean) {
+        this.clear(map);
+        this.offlineMap(map);
+        this.hydratePoisByDistanceAndBearing(antenna, calcAngleCenter);
+        this.renderSector(map, antenna);
+        this.renderDestination(map, antenna);
+        this.renderNorth(map, antenna);
+        this.renderAntenna(map, antenna);
+        this.renderAngles(map, antenna);
+        if (calcAngleCenter) {
+            this.zoomToExtent(map);
+        }
+
+        // map.updateSize();
     }
 
     offlineMap(map: Map) {
@@ -132,29 +148,6 @@ export class Utils {
             return -(360 - azimuth);
         }
         return azimuth;
-    }
-
-
-    renderMap(map: Map, antenna: Antenna, calcAngleCenter: boolean) {
-        this.clear(map);
-        this.offlineMap(map);
-        // const layer = new Tile({
-        //     source: new OSM()
-        // });
-        // layer.set('name', 'bing');
-        // map.addLayer(layer);
-        this.hydratePoisByDistanceAndBearing(antenna, calcAngleCenter);
-        this.renderSector(map, antenna);
-        this.renderDestination(map, antenna);
-        this.renderNorth(map, antenna);
-        this.renderAntenna(map, antenna);
-        this.renderAngles(map, antenna);
-        if (calcAngleCenter) {
-            this.zoomToExtent(map);
-        }
-
-        // this.roundAll();
-        map.updateSize();
     }
 
     renderAntenna(map: Map, antenna: Antenna) {
@@ -327,6 +320,7 @@ export class Utils {
             opacity: 0.3
         });
         layer.set('name', 'sector');
+        console.log(layer.get('name') + ': created!');
         map.addLayer(layer);
     }
 
@@ -403,6 +397,9 @@ export class Utils {
     }
 
     clear(map: Map) {
-        map.getLayers().forEach(ly => map.removeLayer(ly));
+        map.getLayers().forEach(ly => {
+            map.removeLayer(ly);
+            console.log(ly);
+        });
     }
 }

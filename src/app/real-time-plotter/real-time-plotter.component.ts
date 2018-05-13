@@ -23,18 +23,13 @@ export class RealTimePlotterComponent implements OnInit {
   ajaxCompleted = false;
   antennas: Antenna[];
   rows: Antenna[][];
-  selected = new Antenna();
+  selected: Antenna = null;
   array = [];
 
 
   constructor(
-    private antennasService: AntennasService,
-    public realTimeMappingService: RealTimeMappingService
+    private antennasService: AntennasService
   ) {
-    realTimeMappingService.messages.subscribe(msg => {
-      this.array = msg;
-      console.log(msg);
-    });
   }
 
   ngOnInit() {
