@@ -10,10 +10,11 @@
     background-color: #7E8C8D;
 }
 
-#table-airplanes {
+#selected-airplane {
     position: absolute;
-    bottom: 5px;
+    bottom: 20px;
     right: 5px;
     width: 30%;
     z-index: 99999;
+    opacity: 0.8;
 }

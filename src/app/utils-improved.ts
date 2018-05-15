@@ -46,7 +46,7 @@ export class UtilsImproved {
     ly_angles: Vector;
 
     renderMap(map: Map, antenna: Antenna, calcAngleCenter: boolean) {
-        // this.offlineMap(map);
+        this.offlineMap(map);
         this.clear(map);
         this.hydratePoisByDistanceAndBearing(antenna, calcAngleCenter);
         this.renderSector(map, antenna);
@@ -298,8 +298,11 @@ export class UtilsImproved {
     offlineMap(map: Map) {
         if (!this.ly_baseMap) {
             this.ly_baseMap = new Tile({
-                source: new XYZ({
-                    url: 'assets/tiles/{z}/{x}/{y}.png'
+                // source: new XYZ({
+                //     url: 'assets/tiles/{z}/{x}/{y}.png'
+                // })
+                source: new OSM({
+                    url: 'http://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
                 })
             });
             map.addLayer(this.ly_baseMap);

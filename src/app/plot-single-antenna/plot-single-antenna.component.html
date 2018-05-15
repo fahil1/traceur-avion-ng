@@ -6,33 +6,53 @@
 <div id="map-interface">
   <div id="map" #map>
   </div>
-  <table id="table-airplanes" class="table table-compact table-vertical">
-      <tbody>
-          <tr>
-              <th>Basic table</th>
-              <td>.table</td>
-              <td>...</td>
-          </tr>
-          <tr>
-              <th>Left-aligned table cells</th>
-              <td>.left</td>
-              <td>...</td>
-          </tr>
-          <tr>
-              <th>Tables without borders</th>
-              <td>.table-noborder</td>
-              <td>...</td>
-          </tr>
-          <tr>
-              <th>Compact tables</th>
-              <td>.table-compact</td>
-              <td>...</td>
-          </tr>
-          <tr>
-              <th>Vertical tables</th>
-              <td>.table-vertical</td>
-              <td>...</td>
-          </tr>
-      </tbody>
-  </table>
+  <div id="selected-airplane" class="card" *ngIf="selected">
+        <div class="card-header">
+            {{ selected.call_sign ? selected.call_sign : '?'  }} <span *ngIf="currentlyRecording" class="label label-danger">Enregistrement..</span>
+        </div>
+        <div class="card-block">
+            <div class="card-text">
+                    <table class="table table-vertical table-noborder table-compact">
+                        <tbody>
+                            <tr>
+                                <th>ICAO</th>
+                                <td>{{ selected.icao }}</td>
+                            </tr>
+                            <tr>
+                                <th>Altitude</th>
+                                <td>{{ selected.altitude }} m</td>
+                            </tr>
+                            <tr>
+                                <th>Vitesse</th>
+                                <td>{{ selected.speed }} km/h</td>
+                            </tr>
+                            <tr>
+                                <th>Azimuth</th>
+                                <td>{{ selected.heading }} °</td>
+                            </tr>
+                            <tr>
+                                <th>Gain/Perte d'élevation</th>
+                                <td>{{ selected.vertical_rate }} m/min</td>
+                            </tr>
+                            <tr>
+                                <th>Dernière apparition</th>
+                                <td>{{ selected.last_seen | date: 'medium' }}</td>
+                            </tr>
+                            
+
+                        </tbody>
+                    </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="button" class="btn btn-icon btn-warning" (click)="onRecord()" *ngIf="!currentlyRecording">
+                 <clr-icon shape="video-camera"></clr-icon>
+                 Enregistrer
+            </button>
+            <button type="button" class="btn btn-icon btn-warning" (click)="onRecord()" *ngIf="currentlyRecording">
+                <clr-icon shape="stop"></clr-icon>
+                Arrêter enregistrement
+           </button>
+        </div>
+  </div>
 </div>
