@@ -57,7 +57,7 @@ export class AntennasService {
 
   updateAntenna(antenna: Antenna): Observable<Antenna> {
     return this.http.put<Antenna>(this.antennasUrl, antenna, this.httpOptions).pipe(
-      catchError(this.handleError<Antenna>('addAntenna'))
+      catchError(this.handleError<Antenna>('updateAntenna'))
     );
   }
 }

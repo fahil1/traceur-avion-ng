@@ -3,6 +3,9 @@
     <clr-icon shape="list"></clr-icon>
     Aller à la liste des antennes
 </button>
+<br>
+selected: {{ selected }}<br>
+recording: {{ recording }}
 <div id="map-interface">
   <div id="map" #map>
   </div>
@@ -45,11 +48,11 @@
             </div>
         </div>
         <div class="card-footer">
-            <button type="button" class="btn btn-icon btn-warning" (click)="onRecord()" *ngIf="!currentlyRecording">
+            <button type="button" class="btn btn-icon btn-warning" (click)="startRecording()" *ngIf="!recording">
                  <clr-icon shape="video-camera"></clr-icon>
                  Enregistrer
             </button>
-            <button type="button" class="btn btn-icon btn-warning" (click)="onRecord()" *ngIf="currentlyRecording">
+            <button type="button" class="btn btn-icon btn-warning" (click)="stopRecording()" *ngIf="recording">
                 <clr-icon shape="stop"></clr-icon>
                 Arrêter enregistrement
            </button>

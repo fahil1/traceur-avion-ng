@@ -5,5 +5,5 @@ export class Recording {
     icao: string;
     call_sign: string;
     positions: Position[] = [];
-    createdAt: Date;
+    createdAt: Date = new Date();
 }

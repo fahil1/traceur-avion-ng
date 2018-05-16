@@ -16,6 +16,13 @@ import Point from 'ol/geom/point';
 import Vector from 'ol/layer/vector';
 import Source from 'ol/source/vector';
 import { Recording } from '../recording';
+import { Position } from '../position';
+import cloneDeep from 'lodash/cloneDeep';
+import LineString from 'ol/geom/linestring';
+
+
+
+import { RecordingsService } from '../recordings.service';
 
 @Component({
   selector: 'app-plot-single-antenna',
@@ -29,28 +36,31 @@ export class PlotSingleAntennaComponent implements OnInit {
   back: EventEmitter<any> = new EventEmitter<any>();
   airplanes: any[] = [];
   selected: any = null;
-  recording: Recording = new Recording();
-  currentlyRecording = false;
+  recording: Recording = null;
   map: Map;
   utils = new UtilsImproved();
   ly_airplanes: Vector;
+  ly_flights: Vector;
+  flights_lines = {};
 
   constructor(
-    public realTimeMappingService: RealTimeMappingService
+    public realTimeMappingService: RealTimeMappingService,
+    private recordingsService: RecordingsService
   ) {
-      // realTimeMappingService.messages.subscribe(msg => {
-      //   this.airplanes = msg;
-      //   this.renderAirplanes();
-      // });
-      this.airplanes.push({
-        altitude: 9448.8,
-        call_sign: 'RAM432',
-        heading: 214,
-        icao: 'E48BA8',
-        latitude: 33.513,
-        longitude: -7.16415,
-        speed: 895.4
+      realTimeMappingService.messages.subscribe(msg => {
+        this.airplanes = msg;
+        this.renderAirplanes();
       });
+      // this.airplanes.push({
+      //   altitude: 9448.8,
+      //   call_sign: 'RAM432',
+      //   heading: 214,
+      //   icao: 'E48BA8',
+      //   latitude: 33.513,
+      //   longitude: -7.16415,
+      //   speed: 895.4,
+      //   last_seen: 13333333333333
+      // });
    }
 
   ngOnInit() {
@@ -65,13 +75,13 @@ export class PlotSingleAntennaComponent implements OnInit {
           return false;
         }
       });
-      if (features && !this.currentlyRecording) {
+      if (features && !this.recording) {
         this.selected = features[0].getProperties();
-      } else if (!this.currentlyRecording) {
+      } else if (!this.recording) {
         this.selected = null;
       }
     });
-    this.renderAirplanes();
+    // this.renderAirplanes();
   }
 
   goBack() {
@@ -154,6 +164,19 @@ export class PlotSingleAntennaComponent implements OnInit {
         if (this.selected && this.selected.icao === properties.icao) {
           this.selected = properties;
           isFound = true;
+        }
+        if (this.recording) {
+          this.recording.icao = properties.icao;
+          this.recording.call_sign = properties.call_sign;
+          const position = new Position(
+            properties.altitude,
+            properties.speed,
+            properties.heading,
+            properties.vertical_rate,
+            properties.last_seen
+          );
+          position.position = feature.getGeometry().getCoordinates();
+          this.recording.positions.push(position);
           this.map.getView().fit(feature.getGeometry(), {
             maxZoom: 13
           });
@@ -188,12 +211,34 @@ export class PlotSingleAntennaComponent implements OnInit {
     }
   }
 
-  onRecord() {
-    this.currentlyRecording = !this.currentlyRecording;
-    if (this.currentlyRecording) {
-      // enregistrement..
-    } else {
-      // arrêt d'enregistrement
+  renderFlights() {
+    if (!this.ly_flights) {
+    this.ly_flights = new Vector({
+          source: new Source()
+      });
     }
+    this.ly_flights.getSource().clear();
+    this.airplanes.forEach(aircraft => {
+      const coords = [aircraft.longitude, aircraft.latitude];
+      if (Object.keys(this.flights_lines)
+      .includes(aircraft.icao)) {
+        this.flights_lines['icao'].appendCoordinate(coords);
+      } else {
+        const lineString = new LineString();
+        lineString.appendCoordinate(coords);
+        this.flights_lines['icao'] = lineString;
+      }
+    });
+  }
+
+  startRecording() {
+    this.recording = new Recording();
+  }
+
+  stopRecording() {
+    console.log('STOP');
+    this.recordingsService.saveRecording(cloneDeep(this.recording)).subscribe(_ => {
+      this.recording = null;
+    });
   }
 }
