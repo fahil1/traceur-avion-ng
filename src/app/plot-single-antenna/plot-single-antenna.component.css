@@ -14,7 +14,7 @@
     position: absolute;
     bottom: 20px;
     right: 5px;
-    width: 30%;
+    width: 27%;
     z-index: 99999;
     opacity: 0.8;
 }
@@ -39,4 +39,5 @@
     z-index: 99999;
     opacity: 0.7;
 }
+
 

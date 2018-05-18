@@ -13,8 +13,11 @@ import { RealTimePlotterComponent } from './real-time-plotter/real-time-plotter.
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { AntennasComponent } from './antennas/antennas.component';
 import { RecordingsComponent } from './recordings/recordings.component';
-import { AppRoutingModule } from './/app-routing.module';
+import { AppRoutingModule } from './app-routing.module';
 import { PlotSingleAntennaComponent } from './plot-single-antenna/plot-single-antenna.component';
+
+import {GaugesModule} from 'ng-canvas-gauges/lib';
+
 
 
 registerLocaleData(localeFr, 'fr');
@@ -33,7 +36,8 @@ registerLocaleData(localeFr, 'fr');
     ClarityModule,
     BrowserAnimationsModule,
     FormsModule,
-    AppRoutingModule
+    AppRoutingModule,
+    GaugesModule
   ],
   providers: [{provide: LOCALE_ID, useValue: 'fr' }],
   bootstrap: [AppComponent]
