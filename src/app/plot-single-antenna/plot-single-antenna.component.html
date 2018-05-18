@@ -7,55 +7,84 @@
 selected: {{ selected }}<br>
 recording: {{ recording }}
 <div id="map-interface">
-  <div id="map" #map>
-  </div>
-  <div id="selected-airplane" class="card" *ngIf="selected">
-        <div class="card-header">
-            {{ selected.call_sign ? selected.call_sign : '?'  }} <span *ngIf="currentlyRecording" class="label label-danger">Enregistrement..</span>
-        </div>
-        <div class="card-block">
-            <div class="card-text">
-                    <table class="table table-vertical table-noborder table-compact">
-                        <tbody>
-                            <tr>
-                                <th>ICAO</th>
-                                <td>{{ selected.icao }}</td>
-                            </tr>
-                            <tr>
-                                <th>Altitude</th>
-                                <td>{{ selected.altitude }} m</td>
-                            </tr>
-                            <tr>
-                                <th>Vitesse</th>
-                                <td>{{ selected.speed }} km/h</td>
-                            </tr>
-                            <tr>
-                                <th>Azimuth</th>
-                                <td>{{ selected.heading }} °</td>
-                            </tr>
-                            <tr>
-                                <th>Gain/Perte d'élevation</th>
-                                <td>{{ selected.vertical_rate }} m/min</td>
-                            </tr>
-                            <tr>
-                                <th>Dernière apparition</th>
-                                <td>{{ selected.last_seen | date: 'medium' }}</td>
-                            </tr>
-                            
-
-                        </tbody>
-                    </table>
+    <div id="map" #map>
+    </div>
+    <div id="selected-airplane" class="card" *ngIf="selected">
+            <div class="card-header">
+                {{ selected.getProperties().call_sign ? selected.getProperties().call_sign : '?'  }} <span *ngIf="currentlyRecording" class="label label-danger">Enregistrement..</span>
             </div>
-        </div>
-        <div class="card-footer">
-            <button type="button" class="btn btn-icon btn-warning" (click)="startRecording()" *ngIf="!recording">
-                 <clr-icon shape="video-camera"></clr-icon>
-                 Enregistrer
+            <div class="card-block">
+                <div class="card-text">
+                        <table class="table table-vertical table-noborder table-compact">
+                            <tbody>
+                                <tr>
+                                    <th>ICAO</th>
+                                    <td>{{ selected.getProperties().icao }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Altitude</th>
+                                    <td>{{ selected.getProperties().altitude }} m</td>
+                                </tr>
+                                <tr>
+                                    <th>Vitesse</th>
+                                    <td>{{ selected.getProperties().speed }} km/h</td>
+                                </tr>
+                                <tr>
+                                    <th>Azimuth</th>
+                                    <td>{{ selected.getProperties().heading }} °</td>
+                                </tr>
+                                <tr>
+                                    <th>Gain/Perte d'élevation</th>
+                                    <td>{{ selected.getProperties().vertical_rate }} m/min</td>
+                                </tr>
+                                <tr>
+                                    <th>Dernière apparition</th>
+                                    <td>{{ selected.getProperties().last_seen | date: 'medium' }}</td>
+                                </tr>
+                                
+
+                            </tbody>
+                        </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="button" class="btn btn-icon btn-sm btn-warning" (click)="startRecording()" *ngIf="!recording">
+                    <clr-icon shape="video-camera"></clr-icon>
+                    Enregistrer
+                </button>
+                <button type="button" class="btn btn-icon btn-warning" (click)="stopRecording()" *ngIf="recording">
+                    <clr-icon shape="stop"></clr-icon>
+                    Arrêter enregistrement
             </button>
-            <button type="button" class="btn btn-icon btn-warning" (click)="stopRecording()" *ngIf="recording">
-                <clr-icon shape="stop"></clr-icon>
-                Arrêter enregistrement
-           </button>
-        </div>
-  </div>
+            </div>
+    </div>
+    <clr-vertical-nav [clrVerticalNavCollapsible]="true" [(clrVerticalNavCollapsed)]="collapsed" id="toolbar">
+        <a clrVerticalNavLink [class.active]="cl_center" (click)="cl_center = !cl_center"> 
+            <clr-icon clrVerticalNavIcon shape="bullseye"></clr-icon>
+            Centrer auto
+        </a>
+        <a clrVerticalNavLink >
+            <clr-icon clrVerticalNavIcon shape="video-camera" (click)="onRecord()"></clr-icon>
+            Enregistrer sélection
+        </a>
+        <a clrVerticalNavLink [class.active]="cl_offline" (click)="cl_offline = !cl_offline">
+            <clr-icon clrVerticalNavIcon shape="map"></clr-icon>
+            Carte hors-ligne
+        </a>
+        <a clrVerticalNavLink [class.active]="cl_path" (click)="cl_path = !cl_path">
+            <clr-icon clrVerticalNavIcon shape="airplane"></clr-icon>
+            Montrer trajectoire
+        </a>
+        
+    </clr-vertical-nav>
+    <div id="notifications" *ngIf="alerts">
+        <clr-alert *ngFor="let alert of alerts" [clrAlertType]="alert.type">
+            <div clr-alert-item class="alert-item">
+                <span class="alert-text">
+                    {{ alert.text }}
+                </span>
+            </div>
+        </clr-alert>
+    </div>
+    
 </div>

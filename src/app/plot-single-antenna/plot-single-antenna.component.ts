@@ -39,9 +39,16 @@ export class PlotSingleAntennaComponent implements OnInit {
   recording: Recording = null;
   map: Map;
   utils = new UtilsImproved();
-  ly_airplanes: Vector;
-  ly_flights: Vector;
-  flights_lines = {};
+  timeToLive = 30 * 1000;
+  ly_trails: Vector;
+  all_trails = {};
+  ly_aircrafts: Vector;
+  cl_center = false;
+  cl_offline = false;
+  cl_path = false;
+  collapsed = true;
+  alerts = [];
+  styles = {};
 
   constructor(
     public realTimeMappingService: RealTimeMappingService,
@@ -51,16 +58,6 @@ export class PlotSingleAntennaComponent implements OnInit {
         this.airplanes = msg;
         this.renderAirplanes();
       });
-      // this.airplanes.push({
-      //   altitude: 9448.8,
-      //   call_sign: 'RAM432',
-      //   heading: 214,
-      //   icao: 'E48BA8',
-      //   latitude: 33.513,
-      //   longitude: -7.16415,
-      //   speed: 895.4,
-      //   last_seen: 13333333333333
-      // });
    }
 
   ngOnInit() {
@@ -69,19 +66,23 @@ export class PlotSingleAntennaComponent implements OnInit {
     this.map.on('click', e => {
       const features = this.map.getFeaturesAtPixel(e.pixel, {
         layerFilter: ly => {
-          if (ly === this.ly_airplanes) {
+          if (ly === this.ly_aircrafts) {
             return true;
           }
           return false;
         }
       });
-      if (features && !this.recording) {
-        this.selected = features[0].getProperties();
-      } else if (!this.recording) {
+      this.ly_trails.getSource().clear();
+      if (features) {
+        this.selected = features[0];
+      } else {
         this.selected = null;
+        this.map.getView().setRotation(0);
       }
     });
-    // this.renderAirplanes();
+    setInterval(_ => {
+      this.alerts = [];
+    }, 30000);
   }
 
   goBack() {
@@ -107,6 +108,28 @@ export class PlotSingleAntennaComponent implements OnInit {
       return latitude + ' ' + latitudeCardinal + '\n' + longitude + ' ' + longitudeCardinal;
   }
 
+  styleFactory() {
+    const aircraft_style = function(feature) {
+      return new Style({
+        image: new Icon({
+            src: 'assets/noeud.png'
+        }),
+        text: new Text({
+          text: feature.getProperties().call_sign,
+            fill: new Fill({
+                color: '#00FF00'
+            }),
+            stroke: new Stroke({
+                color: '#000000',
+                width: 3
+            }),
+            offsetY: 18
+        })
+      });
+    };
+    this.styles['aircraft'] = aircraft_style;
+  }
+
   createMap() {
     this.map = new Map({
       view: new View({
@@ -117,7 +140,7 @@ export class PlotSingleAntennaComponent implements OnInit {
         zoom: 6
       }),
       controls: [
-        new Zoom(),
+        // new Zoom(),
         new Fullscreen({
           source: 'map-interface'
         })
@@ -137,58 +160,30 @@ export class PlotSingleAntennaComponent implements OnInit {
   }
 
   renderAirplanes() {
-    if(!this.ly_airplanes) {
-      this.ly_airplanes = new Vector({
-          source: new Source()
+    if (!this.ly_aircrafts || !this.ly_trails) {
+      this.ly_trails = new Vector({
+        source: new Source()
       });
-      this.map.addLayer(this.ly_airplanes);
+      this.map.addLayer(this.ly_trails);
+      this.ly_aircrafts = new Vector({
+        source: new Source()
+      });
+      this.map.addLayer(this.ly_aircrafts);
     }
-
-    this.ly_airplanes.getSource().clear();
-    let isFound = false;
-
-    this.airplanes.forEach(aircraft => {
-      if (aircraft.latitude != null && aircraft.heading != null) {
-        const point = new Point([aircraft.longitude, aircraft.latitude]);
-        const feature = new Feature({
-          geometry: point,
-          icao: aircraft.icao,
-          call_sign: aircraft.call_sign,
-          altitude: aircraft.altitude,
-          speed: aircraft.speed,
-          heading: aircraft.heading,
-          vertical_rate: aircraft.vertical_rate,
-          last_seen: new Date(+aircraft.last_seen * 1000)
-        });
-        const properties = feature.getProperties();
-        if (this.selected && this.selected.icao === properties.icao) {
-          this.selected = properties;
-          isFound = true;
-        }
-        if (this.recording) {
-          this.recording.icao = properties.icao;
-          this.recording.call_sign = properties.call_sign;
-          const position = new Position(
-            properties.altitude,
-            properties.speed,
-            properties.heading,
-            properties.vertical_rate,
-            properties.last_seen
-          );
-          position.position = feature.getGeometry().getCoordinates();
-          this.recording.positions.push(position);
-          this.map.getView().fit(feature.getGeometry(), {
-            maxZoom: 13
+    this.clearDeadAirplanes();    // test?
+    this.airplanes.forEach(el => {
+      if (el.longitude && el.latitude && el.heading) {
+        const coords = [+el.longitude, +el.latitude];
+        /*
+          AIRCRAFTS
+        */
+        let aircraftFeature = this.ly_aircrafts.getSource().getFeatureById(el.icao);
+        const call_sign = el.call_sign != null ? el.call_sign.replace(/_/g, '') : '?';
+          const style = new Style({
+              image: new Icon({
+                  src: 'assets/noeud.png'
+              })
           });
-        }
-
-        const call_sign = aircraft.call_sign != null ? aircraft.call_sign.replace(/_/g, '') : '?';
-        const style = new Style({
-            image: new Icon({
-                src: 'assets/noeud.png'
-            })
-        });
-
         const text = new Text({
             text: call_sign,
             fill: new Fill({
@@ -200,33 +195,83 @@ export class PlotSingleAntennaComponent implements OnInit {
             }),
             offsetY: 18,
         });
-        style.setText(text);
-        style.getImage().setRotation(aircraft.heading * 0.0174533);
-        feature.setStyle(style);
-        this.ly_airplanes.getSource().addFeature(feature);
-      }
-    });
-    if (!isFound) {
-      this.selected = null;
-    }
-  }
+        let rotation = el.heading * 0.0174533;
+        if (this.selected && this.cl_center) {
+          rotation = 0;
+        }
+        if (aircraftFeature) {
+          aircraftFeature.setProperties({
+            // last_seen: el.last_seen * 1000
+            last_seen: +new Date()
+          });
+          aircraftFeature.setGeometry(new Point(coords));
+          aircraftFeature.getStyle().setText(text);
+          aircraftFeature.getStyle().getImage().setRotation(rotation);
+        } else {
+          aircraftFeature = new Feature({
+            geometry: new Point(coords),
+            // last_seen: el.last_seen * 1000
+            last_seen: +new Date()
+          });
+          aircraftFeature.setId(el.icao);
+          aircraftFeature.setStyle(style);
+          aircraftFeature.getStyle().getImage().setRotation(rotation);
+          aircraftFeature.getStyle().setText(text);
 
-  renderFlights() {
-    if (!this.ly_flights) {
-    this.ly_flights = new Vector({
-          source: new Source()
-      });
-    }
-    this.ly_flights.getSource().clear();
-    this.airplanes.forEach(aircraft => {
-      const coords = [aircraft.longitude, aircraft.latitude];
-      if (Object.keys(this.flights_lines)
-      .includes(aircraft.icao)) {
-        this.flights_lines['icao'].appendCoordinate(coords);
-      } else {
+          this.ly_aircrafts.getSource().addFeature(aircraftFeature);
+        }
+
+        /*
+          TRAILS
+        */
+      //  let trailFeature = this.ly_trails.getSource().getFeatureById(el.icao);
+       let trailFeature = Object.keys(this.all_trails).includes(el.icao) ? this.all_trails[el.icao] : null;
+       if (trailFeature) {
+        trailFeature.getGeometry().appendCoordinate(coords);
+       } else {
         const lineString = new LineString();
         lineString.appendCoordinate(coords);
-        this.flights_lines['icao'] = lineString;
+        trailFeature = new Feature({
+          geometry: lineString
+        });
+        this.all_trails[el.icao] = trailFeature;
+       }
+       if (this.selected && this.selected === aircraftFeature) {
+          aircraftFeature.setProperties({
+            icao: el.icao,
+            call_sign: el.call_sign,
+            altitude: el.altitude,
+            speed: el.speed,
+            heading: el.heading,
+            vertical_rate: el.vertical_rate,
+            // last_seen: el.last_seen
+          });
+          if (!this.ly_trails.getSource().getFeatures().length && this.cl_path) {
+            this.ly_trails.getSource().addFeature(trailFeature);
+          } else if (!this.cl_path) {
+            this.ly_trails.getSource().clear();
+          }
+          if (this.cl_center) {
+            this.map.getView().setRotation(-el.heading * 0.0174533);
+            this.map.getView().fit(this.selected.getGeometry(), {
+              maxZoom: 14
+            });
+          }
+        }
+      }
+    });
+  }
+
+  clearDeadAirplanes() {
+    this.ly_aircrafts.getSource().getFeatures().forEach(airplaneFeature => {
+      const id = airplaneFeature.getId();
+      const last_seen = +airplaneFeature.getProperties().last_seen;
+      const timeLived = (+new Date()) - last_seen;
+      if (timeLived >= this.timeToLive) {
+        this.addAlert('alert-warning', `suppression de ${id}!`);
+        const featureToRemove = this.ly_aircrafts.getSource().getFeatureById(id);
+        this.ly_aircrafts.getSource().removeFeature(airplaneFeature);
+        this.ly_trails.getSource().clear();
       }
     });
   }
@@ -239,6 +284,15 @@ export class PlotSingleAntennaComponent implements OnInit {
     console.log('STOP');
     this.recordingsService.saveRecording(cloneDeep(this.recording)).subscribe(_ => {
       this.recording = null;
+    });
+  }
+
+  addAlert(type: string, text: string) {
+    const d = new Date();
+    const date_formatted = d.getHours() + ':' + d.getMinutes();
+    this.alerts.push({
+      type: type,
+      text: `[${date_formatted}] ` + text
     });
   }
 }

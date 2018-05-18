@@ -16,6 +16,7 @@ import { RecordingsComponent } from './recordings/recordings.component';
 import { AppRoutingModule } from './/app-routing.module';
 import { PlotSingleAntennaComponent } from './plot-single-antenna/plot-single-antenna.component';
 
+
 registerLocaleData(localeFr, 'fr');
 @NgModule({
   declarations: [
