@@ -1,15 +1,13 @@
-.stats-icon, .stats-value {
-    padding: 0px;
-}
-.stats-icon {
-    text-align: right;
-    padding-right: 7px;
+
+.stats-header {
+    text-align: center;
 }
 .stats-value {
-    text-align:  left;
     font-size: 1.6rem;
     font-weight: bold;
-    margin-top: 4px;
+    position: relative;
+    top: 7px;
+    left: 5px;
 }
 .stats-text {
     text-transform: uppercase;

@@ -1,53 +1,51 @@
-<div class="row">
-    <div class="col-md-8 col-lg-8 offset-md-2">
-        <div class="row">
-          <div class="col-lg-3 col-md-3" *ngFor="let el of stats">
-            <div class="card">
-              <div class="card-block">
-                <div class="card-title">
-                    <div class="row flex-items-xs-center">
-                      <div class="col-xs-3 stats-icon">
-                          <img src="{{ 'assets/stats/' + el.icon }}" height="32" width="32" >
-                      </div>
-                      <div class="col-xs-4 stats-value">
-                          {{ el.value }}
-                      </div>
+<span class="spinner" *ngIf="!ajaxCompleted" id="spinnerGlobal"></span>
+<div [hidden]="!ajaxCompleted">
+    <div class="row">
+        <div class="col-md-8 col-lg-8 offset-md-2">
+            <div class="row">
+                <div class="col-lg-3 col-md-3" *ngFor="let el of stats">
+                    <div class="card">
+                        <div class="card-block">
+                            <div class="card-title">
+                                    <div class="stats-header">
+                                        <img src="{{ 'assets/stats/' + el.icon }}" height="32" width="32" >
+                                        <span class="stats-value">{{ el.value }}</span>
+                                    </div>
+                                <div class="stats-text">
+                                    {{ el.text }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stats-text">
-                      {{ el.text }}
-                    </div>
-                    
                 </div>
-              </div>
             </div>
-          </div>
         </div>
     </div>
-</div>
-<div class="row">
-  <div class="col-md-4 col-lg-4 offset-md-2">
-      <div class="card">
-            <div class="card-header">
-                Positions enregistrées ce mois-ci
-            </div>
-          <div class="card-block">
-                <div class="card-text">
-                    <canvas id="positionsChart" height="200"></canvas>
-                </div>
-          </div>
-      </div>
-  </div>
-  <div class="col-md-4 col-lg-4">
+    <div class="row">
+    <div class="col-md-4 col-lg-4 offset-md-2">
         <div class="card">
-            <div class="card-header">
-                Types d'antennes
-            </div>
-            <div class="card-block">
-                <div class="card-text">
-                    <canvas id="antennasChart" height="200"></canvas>
+                <div class="card-header">
+                    Positions enregistrées ces 7 derniers jours
                 </div>
+            <div class="card-block">
+                    <div class="card-text">
+                        <canvas id="positionsChart" height="200"></canvas>
+                    </div>
             </div>
         </div>
     </div>
+    <div class="col-md-4 col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    Types d'antennes
+                </div>
+                <div class="card-block">
+                    <div class="card-text">
+                        <canvas id="antennasChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+    </div>
 </div>

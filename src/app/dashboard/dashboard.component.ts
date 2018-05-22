@@ -10,6 +10,7 @@ import { Chart } from 'chart.js';
 })
 export class DashboardComponent implements OnInit {
   stats: any;
+  ajaxCompleted = false;
   positionsChart: Chart;
   antennasChart: Chart;
   labels1: string[] = [];
@@ -40,6 +41,7 @@ export class DashboardComponent implements OnInit {
         this.labels2.push('Omnidirectionnel');
         this.data2.push(s.countOmni);
         this.renderCharts();
+        this.ajaxCompleted = true;
     });
   }
 
