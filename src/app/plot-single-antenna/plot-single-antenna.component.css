@@ -14,11 +14,11 @@
     position: absolute;
     bottom: 20px;
     right: 5px;
-    width: 27%;
+    width: 28%;
     z-index: 99999;
     opacity: 0.8;
 }
-#selected-airplane *:not(button):not(clr-icon) {
+#selected-airplane *:not(button):not(clr-icon):not(.label) {
     background-color: #34495e;
     color: white;
 }
@@ -40,4 +40,7 @@
     opacity: 0.7;
 }
 
+#gauges {
+    height: 120px !important;
+}
 

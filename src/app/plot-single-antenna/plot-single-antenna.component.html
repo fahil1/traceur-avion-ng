@@ -3,101 +3,45 @@
     <clr-icon shape="list"></clr-icon>
     Aller à la liste des antennes
 </button>
-<br>
-selected: {{ selected }}<br>
-recording: {{ recording }}
 <div id="map-interface">
     <div id="map" #map>
     </div>
     <div id="selected-airplane" class="card" *ngIf="selected">
             <div class="card-header">
-                {{ selected.getProperties().call_sign ? selected.getProperties().call_sign : '?'  }} <span *ngIf="currentlyRecording" class="label label-danger">Enregistrement..</span>
+                {{ selected.getProperties().call_sign ? selected.getProperties().call_sign : '?'  }} <span *ngIf="recording" class="label label-danger">{{ this.recording.positions.length }} message(s) enregistré(s)</span>
             </div>
             <div class="card-block">
-                <div class="card-title">
-                    <div class="row">
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                            <radial-gauge
-                            class="gauges"
-                            width="150"
-                            height="150"
-                            units="Km/h"
-                            min-value="0"
-                            max-value="1000"
-                            color-major-ticks="#f5f5f5"
-                            color-minor-ticks="#ddd"
-                            color-numbers="#ccc"
-                            major-ticks="0,100,200,300,400,500,600,700,800,900,1000"
-                            minor-ticks="2"
-                            stroke-ticks="true"
-                            highlights='[
-                                {"from": 800, "to": 1000, "color": "rgba(200, 50, 50, .75)"}
-                            ]'
-                            color-plate="#222"
-                            border-shadow-width="0"
-                            borders="true"
-                            border-inner-width="0"
-                            border-middle-width="6"
-                            border-outer-width="0"
-                            needle-type="arrow"
-                            needle-width="2"
-                            needle-circle-size="7"
-                            needle-circle-outer="true"
-                            needle-circle-inner="false"
-                            animation-duration="1500"
-                            animation-rule="linear"
-                            [attr.value]="selected.getProperties().speed"
-                            >
-                                
-                            </radial-gauge>
-                        </div>
-                        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-xs-12">
-                            <radial-gauge
-                                class="gauges"
-                                height="150"
-                                width="150"
-                                min-value="0"
-                                max-value="360"
-                                major-ticks="N,NE,E,SE,S,SW,W,NW,N"
-                                minor-ticks="22"
-                                ticks-angle="360"
-                                start-angle="180"
-                                stroke-ticks="false"
-                                highlights="false"
-                                color-plate="#222"
-                                color-major-ticks="#f5f5f5"
-                                color-minor-ticks="#ddd"
-                                color-numbers="#ccc"
-                                color-needle="rgba(240, 128, 128, 1)"
-                                color-needle-end="rgba(255, 160, 122, .9)"
-                                value-box="false"
-                                value-text-shadow="false"
-                                color-circle-inner="#fff"
-                                color-needle-circle-outer="#ccc"
-                                needle-circle-size="15"
-                                needle-circle-outer="false"
-                                animation-rule="linear"
-                                needle-type="line"
-                                needle-start="75"
-                                needle-end="99"
-                                needle-width="3"
-                                borders="true"
-                                border-inner-width="0"
-                                border-middle-width="0"
-                                border-outer-width="10"
-                                color-border-outer="#ccc"
-                                color-border-outer-end="#ccc"
-                                color-needle-shadow-down="#222"
-                                border-shadow-width="0"
-                                animation-target="plate"
-                                animation-duration="1500"
-                                [attr.value]="selected.getProperties().heading"
-                                animate-on-init="false"
-                            ></radial-gauge>
-                        </div>
-                    </div>
-                </div>
                 <div class="card-text">
+                        <div class="row" id="gauges">
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                                    <ngx-gauge 
+                                        type="semi" 
+                                        [value]="selected.getProperties().speed.toFixed(1)" 
+                                        label="Vitesse"  
+                                        append="km/h"
+                                        min="0"
+                                        max="1000"
+                                        [thresholds]="speedThresh"
+                                        [duration]="500"
+                                        size="150"
+                                        >
+                                    </ngx-gauge>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-xs-12">
+                                    <ngx-gauge 
+                                        type="semi" 
+                                        [value]="(selected.getProperties().altitude / 1000).toFixed(2)" 
+                                        label="Altitude"  
+                                        append="km"
+                                        min="0"
+                                        max="12"
+                                        [thresholds]="altitudeThresh"
+                                        [duration]="500"
+                                        size="150"
+                                        >
+                                    </ngx-gauge>
+                                </div>
+                            </div>
                         <table class="table table-vertical table-noborder table-compact">
                             <tbody>
                                 <tr>
@@ -131,10 +75,20 @@ recording: {{ recording }}
                 </div>
             </div>
             <div class="card-footer">
-                <button type="button" class="btn btn-icon btn-sm btn-warning" (click)="startRecording()" *ngIf="!recording">
-                    <clr-icon shape="video-camera"></clr-icon>
-                    Enregistrer
-                </button>
+                <div class="row" *ngIf="!recording">
+                    <div class="col-xs-6">
+                        <button type="button" class="btn btn-icon btn-sm btn-warning" (click)="recordWithTrail = true; startRecording()">
+                            <clr-icon shape="video-camera"></clr-icon>
+                            avec trajectoire
+                        </button>        
+                    </div>
+                    <div class="col-xs-6">
+                        <button type="button" class="btn btn-icon btn-sm btn-warning" (click)="recordWithTrail = false; startRecording()">
+                            <clr-icon shape="video-camera"></clr-icon>
+                            sans trajectoire
+                        </button>        
+                    </div>
+                </div>
                 <button type="button" class="btn btn-icon btn-warning" (click)="stopRecording()" *ngIf="recording">
                     <clr-icon shape="stop"></clr-icon>
                     Arrêter enregistrement
@@ -143,20 +97,16 @@ recording: {{ recording }}
     </div>
     <clr-vertical-nav [clrVerticalNavCollapsible]="true" [(clrVerticalNavCollapsed)]="collapsed" id="toolbar">
         <a clrVerticalNavLink [class.active]="cl_center" (click)="cl_center = !cl_center"> 
-            <clr-icon clrVerticalNavIcon shape="bullseye"></clr-icon>
+            <clr-icon clrVerticalNavIcon shape="airplane"></clr-icon>
             Mode poursuite
         </a>
-        <a clrVerticalNavLink >
-            <clr-icon clrVerticalNavIcon shape="video-camera" (click)="onRecord()"></clr-icon>
-            Enregistrer sélection
-        </a>
-        <a clrVerticalNavLink [class.active]="cl_offline" (click)="cl_offline = !cl_offline">
+        <a clrVerticalNavLink [class.active]="cl_offline" (click)="onMapMode()">
             <clr-icon clrVerticalNavIcon shape="map"></clr-icon>
             Carte hors-ligne
         </a>
-        <a clrVerticalNavLink [class.active]="cl_path" (click)="cl_path = !cl_path">
-            <clr-icon clrVerticalNavIcon shape="airplane"></clr-icon>
-            Montrer trajectoire
+        <a clrVerticalNavLink [class.active]="cl_circles" (click)="concentricCircles()">
+            <clr-icon clrVerticalNavIcon shape="target"></clr-icon>
+            Cercles concentriques
         </a>
         
     </clr-vertical-nav>

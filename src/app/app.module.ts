@@ -15,8 +15,8 @@ import { AntennasComponent } from './antennas/antennas.component';
 import { RecordingsComponent } from './recordings/recordings.component';
 import { AppRoutingModule } from './app-routing.module';
 import { PlotSingleAntennaComponent } from './plot-single-antenna/plot-single-antenna.component';
+import { NgxGaugeModule } from 'ngx-gauge';
 
-import {GaugesModule} from 'ng-canvas-gauges/lib';
 
 
 
@@ -37,7 +37,7 @@ registerLocaleData(localeFr, 'fr');
     BrowserAnimationsModule,
     FormsModule,
     AppRoutingModule,
-    GaugesModule
+    NgxGaugeModule
   ],
   providers: [{provide: LOCALE_ID, useValue: 'fr' }],
   bootstrap: [AppComponent]

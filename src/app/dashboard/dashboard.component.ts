@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Statistics } from '../statistics';
+import { StatisticsService } from '../statistics.service';
 import { Chart } from 'chart.js';
 
 @Component({
@@ -7,25 +9,50 @@ import { Chart } from 'chart.js';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
-  stats = [{icon: 'antenna.png', value: 4, text: 'Antennes'},
-    {icon: 'poi.png', value: 12, text: 'Points d\'intérêt'},
-    {icon: 'records.png', value: 8, text: 'Enregistrements'},
-    {icon: 'position.png', value: 26, text: 'Positions'},
-  ];
+  stats: any;
   positionsChart: Chart;
   antennasChart: Chart;
-  constructor() { }
+  labels1: string[] = [];
+  data1: number[] = [];
+  labels2: string[] = [];
+  data2: number[] = [];
+  constructor(
+    private statisticsService: StatisticsService
+  ) { }
 
   ngOnInit() {
+    this.getStats();
+  }
+
+  getStats() {
+    this.statisticsService.getStatistics().subscribe(s => {
+      this.stats = [{icon: 'antenna.png', value: s.countAntennas, text: 'Antennes'},
+          {icon: 'poi.png', value: s.countPOIs, text: 'Points d\'intérêt'},
+          {icon: 'records.png', value: s.countRecordings, text: 'Enregistrements'},
+          {icon: 'position.png', value: s.countPositions, text: 'Positions'},
+        ];
+        s.singleDateList.forEach(el => {
+          this.labels1.push(el.date);
+          this.data1.push(el.count);
+        });
+        this.labels2.push('Directionnel');
+        this.data2.push(s.countDirectionnal);
+        this.labels2.push('Omnidirectionnel');
+        this.data2.push(s.countOmni);
+        this.renderCharts();
+    });
+  }
+
+  renderCharts() {
     this.positionsChart = new Chart('positionsChart', {
       type: 'horizontalBar',
       data: {
-          labels: ['1-5 Avril', '6-10 Avril', '11-15 Avril', '16-20 Avril', '21-25 Avril', '26-30 Avril', '31-5 Mai'],
+          labels: this.labels1,
           datasets: [{
             label: 'Positions',
             borderColor: 'rgb(107, 206, 90)',
             backgroundColor: 'rgb(107, 206, 90)',
-            data: [124, 0, 240, 20, 10, 40, 10],
+            data: this.data1,
           }]
       },
       options: {
@@ -39,13 +66,10 @@ export class DashboardComponent implements OnInit {
       type: 'pie',
       data: {
         datasets: [{
-          data: [40, 60],
+          data: this.data2,
           backgroundColor: ['rgb(70, 198, 207)', 'rgb(224, 99, 99)']
         }],
-        labels: [
-          'Omnidirectionnelle',
-          'Directionnelle'
-        ]
+        labels: this.labels2
       },
       options: {
       }
