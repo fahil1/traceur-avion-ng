@@ -1,3 +1,146 @@
-<p>
-  recordings works!
-</p>
+<clr-modal [(clrModalOpen)]="deleteModal">
+    <h3 class="modal-title">Supprimer {{ selected.call_sign }}</h3>
+    <div class="modal-body">
+        <p>Souhaitez-vous vraiment supprimer l'enregistrement de l'avion <strong>{{ selected.call_sign }}</strong>? Cette action est permanente.</p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="deleteModal = false">Annuler</button>
+        <button type="button" class="btn btn-danger" (click)="onRemove()">Supprimer</button>
+    </div>
+</clr-modal>
+<span class="spinner" *ngIf="!ajaxCompleted" id="spinnerGlobal"></span>
+<div [hidden]="!ajaxCompleted">
+    <div class="row">
+        <div class="offset-xl-2 offset-lg-2 offset-md-2 offset-sm-12 offset-xs-2" *ngIf="playingRecord">
+
+        </div>
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+            <div id="il-progress">
+                <div class="row">
+                    <div class="col-xl-9 col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                        <div class="progress">
+                            <progress max="100" value="30" data-displayval="0%"></progress>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                        0:40 / 1:30
+                    </div>
+                </div>
+            </div>
+            <div id="map-recording">
+
+            </div>
+        </div>
+        <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12" *ngIf="!playingRecord">
+            <clr-datagrid>
+                    <clr-dg-column [clrDgField]="'icao'">ICAO</clr-dg-column>
+                    <clr-dg-column [clrDgField]="'call_sign'">Call Sign</clr-dg-column>
+                    <clr-dg-column [clrDgField]="'antenna.name'">Antenne</clr-dg-column>
+                    <clr-dg-column [clrDgField]="'totalPositions'">Total de messages</clr-dg-column>
+                    <clr-dg-column [clrDgField]="'createdAt'">Date de création</clr-dg-column>
+                    <clr-dg-column></clr-dg-column>
+                    <clr-dg-column></clr-dg-column>
+                    <clr-dg-row  *clrDgItems="let recording of recordings" [clrDgItem]="recording">
+                        <clr-dg-cell>{{ recording.icao }}</clr-dg-cell>
+                        <clr-dg-cell>{{ recording.call_sign }}</clr-dg-cell>
+                        <clr-dg-cell>{{ recording.antenna.name }}</clr-dg-cell>
+                        <clr-dg-cell>{{ recording.totalPositions }}</clr-dg-cell>
+                        <clr-dg-cell>{{ recording.createdAt | date:'yyyy-MM-dd HH:mm' }}</clr-dg-cell>
+                        <clr-dg-cell class="il-control">
+                            <button type="button" class="btn btn-sm btn-info-outline btn-icon" (click)="selected = recording; playingRecord = true">
+                                <clr-icon shape="play"></clr-icon>
+                            </button>
+                        </clr-dg-cell>
+                        <clr-dg-cell class="il-control">
+                            <button type="button" class="btn btn-sm btn-danger-outline btn-icon" (click)="selected = recording; deleteModal = true">
+                                <clr-icon shape="trash"></clr-icon>
+                            </button>
+                        </clr-dg-cell>
+                    </clr-dg-row>
+                    <clr-dg-footer>
+                        <clr-dg-pagination #pagination [clrDgPageSize]="8">
+                            {{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+                            de {{pagination.totalItems}} enregistrements
+                        </clr-dg-pagination>
+                    </clr-dg-footer>
+            </clr-datagrid>
+        </div>
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12" *ngIf="playingRecord">
+            <div id="selected-airplane" class="card" *ngIf="selected">
+                    <div class="card-header">
+                        {{ recordSnapshot.call_sign ? recordSnapshot.call_sign : '?'  }}
+                    </div>
+                    <div class="card-block">
+                        <div class="card-text">
+                                <div class="row" id="gauges">
+                                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-xs-12" style="text-align: center;">
+                                        <ngx-gauge 
+                                            type="semi" 
+                                            [value]="recordSnapshot.speed.toFixed(1)" 
+                                            label="Vitesse"  
+                                            append="km/h"
+                                            min="0"
+                                            max="1000"
+                                            [thresholds]="speedThresh"
+                                            [duration]="500"
+                                            size="200"
+                                            >
+                                        </ngx-gauge>
+                                    </div>
+                                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-xs-12" style="text-align: center;">
+                                        <ngx-gauge 
+                                            type="semi" 
+                                            [value]="(recordSnapshot.altitude / 1000).toFixed(2)" 
+                                            label="Altitude"  
+                                            append="km"
+                                            min="0"
+                                            max="12"
+                                            [thresholds]="altitudeThresh"
+                                            [duration]="500"
+                                            size="200"
+                                            >
+                                        </ngx-gauge>
+                                    </div>
+                                </div>
+                                <table class="table table-vertical table-noborder table-compact">
+                                    <tbody>
+                                        <tr>
+                                            <th>ICAO</th>
+                                            <td>{{ selected.icao }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Altitude</th>
+                                            <td>{{ recordSnapshot.altitude }} m</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Vitesse</th>
+                                            <td>{{ recordSnapshot.speed }} km/h</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Azimuth</th>
+                                            <td>{{ recordSnapshot.heading }} °</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Gain/Perte d'élevation</th>
+                                            <td>{{ recordSnapshot.vertical_rate }} m/min</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Dernière apparition</th>
+                                            <td>{{ recordSnapshot.last_seen | date: 'medium' }}</td>
+                                        </tr>
+                                        
+        
+                                    </tbody>
+                                </table>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button type="button" class="btn btn-icon btn-warning">
+                            <clr-icon shape="stop"></clr-icon>
+                            Arrêter enregistrement
+                        </button>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>

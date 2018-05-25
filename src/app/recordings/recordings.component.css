@@ -1,0 +1,13 @@
+.il-control {
+    text-align: center;
+}
+
+.progress {
+    position: relative;
+    top: 4px;
+}
+
+#map-recording {
+    height: 400px;
+    background-color: #7E8C8D;
+}

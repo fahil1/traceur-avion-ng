@@ -305,7 +305,7 @@ export class PlotSingleAntennaComponent implements OnInit {
   startRecording() {
     this.recording = new Recording();
     this.recording.icao = this.selected.getId();
-    this.recording.idAntenna = this.antenna.id;
+    this.recording.antenna = this.antenna;
     let msg = `Enregistrement de l'avion '${this.recording.icao}' est commencé`;
     if (this.recordWithTrail) {
       this.recording.positions = this.all_positions[this.selected.getId()];
