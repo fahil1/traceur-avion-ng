@@ -227,7 +227,7 @@
     </clr-wizard-page>
 </clr-wizard>
 <span class="spinner" *ngIf="!ajaxCompleted" id="spinnerGlobal"></span>
-<div *ngIf="ajaxCompleted">
+<div *ngIf="ajaxCompleted" id="antennas-table">
   <button class="btn btn-icon" (click)="addModal=true; onAddClick()">
       <clr-icon shape="plus"></clr-icon>
       Ajouter antenne

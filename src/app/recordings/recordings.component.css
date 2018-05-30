@@ -8,6 +8,12 @@
 }
 
 #map-recording {
-    height: 400px;
+    height: 100%;
+    width: 100%;
     background-color: #7E8C8D;
 }
+
+#map-wrapper {
+    height: 400px;
+}
+

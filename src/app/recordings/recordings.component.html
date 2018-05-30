@@ -11,23 +11,23 @@
 <span class="spinner" *ngIf="!ajaxCompleted" id="spinnerGlobal"></span>
 <div [hidden]="!ajaxCompleted">
     <div class="row">
-        <div class="offset-xl-2 offset-lg-2 offset-md-2 offset-sm-12 offset-xs-2" *ngIf="playingRecord">
+        <div class="offset-xl-2 offset-lg-2 offset-md-2 offset-sm-12 offset-xs-2">
 
         </div>
-        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12">
+        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12" [hidden]="!playingRecord" id="map-wrapper">
             <div id="il-progress">
                 <div class="row">
                     <div class="col-xl-9 col-lg-9 col-md-9 col-sm-12 col-xs-12">
                         <div class="progress">
-                            <progress max="100" value="30" data-displayval="0%"></progress>
+                            <progress max="100" [value]="progress" data-displayval="0%"></progress>
                         </div>
                     </div>
                     <div class="col-xl-3 col-lg-3 col-md-3 col-sm-12 col-xs-12">
-                        0:40 / 1:30
+                        {{ currentDuration }} / {{ duration }}
                     </div>
                 </div>
             </div>
-            <div id="map-recording">
+            <div #map id="map-recording">
 
             </div>
         </div>
@@ -47,7 +47,7 @@
                         <clr-dg-cell>{{ recording.totalPositions }}</clr-dg-cell>
                         <clr-dg-cell>{{ recording.createdAt | date:'yyyy-MM-dd HH:mm' }}</clr-dg-cell>
                         <clr-dg-cell class="il-control">
-                            <button type="button" class="btn btn-sm btn-info-outline btn-icon" (click)="selected = recording; playingRecord = true">
+                            <button type="button" class="btn btn-sm btn-info-outline btn-icon" (click)="onPlay(recording)">
                                 <clr-icon shape="play"></clr-icon>
                             </button>
                         </clr-dg-cell>
@@ -68,36 +68,36 @@
         <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12" *ngIf="playingRecord">
             <div id="selected-airplane" class="card" *ngIf="selected">
                     <div class="card-header">
-                        {{ recordSnapshot.call_sign ? recordSnapshot.call_sign : '?'  }}
+                        {{ selected.call_sign ? selected.call_sign : '?'  }}
                     </div>
-                    <div class="card-block">
+                    <div class="card-block" *ngIf="currentPosition">
                         <div class="card-text">
                                 <div class="row" id="gauges">
                                     <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-xs-12" style="text-align: center;">
                                         <ngx-gauge 
                                             type="semi" 
-                                            [value]="recordSnapshot.speed.toFixed(1)" 
+                                            [value]="currentPosition.speed.toFixed(1)" 
                                             label="Vitesse"  
                                             append="km/h"
                                             min="0"
                                             max="1000"
                                             [thresholds]="speedThresh"
                                             [duration]="500"
-                                            size="200"
+                                            size="150"
                                             >
                                         </ngx-gauge>
                                     </div>
                                     <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-xs-12" style="text-align: center;">
                                         <ngx-gauge 
                                             type="semi" 
-                                            [value]="(recordSnapshot.altitude / 1000).toFixed(2)" 
+                                            [value]="(currentPosition.altitude / 1000).toFixed(2)" 
                                             label="Altitude"  
                                             append="km"
                                             min="0"
                                             max="12"
                                             [thresholds]="altitudeThresh"
                                             [duration]="500"
-                                            size="200"
+                                            size="150"
                                             >
                                         </ngx-gauge>
                                     </div>
@@ -110,23 +110,23 @@
                                         </tr>
                                         <tr>
                                             <th>Altitude</th>
-                                            <td>{{ recordSnapshot.altitude }} m</td>
+                                            <td>{{ currentPosition.altitude }} m</td>
                                         </tr>
                                         <tr>
                                             <th>Vitesse</th>
-                                            <td>{{ recordSnapshot.speed }} km/h</td>
+                                            <td>{{ currentPosition.speed }} km/h</td>
                                         </tr>
                                         <tr>
                                             <th>Azimuth</th>
-                                            <td>{{ recordSnapshot.heading }} °</td>
+                                            <td>{{ currentPosition.heading }} °</td>
                                         </tr>
                                         <tr>
                                             <th>Gain/Perte d'élevation</th>
-                                            <td>{{ recordSnapshot.vertical_rate }} m/min</td>
+                                            <td>{{ currentPosition.vertical_rate }} m/min</td>
                                         </tr>
                                         <tr>
                                             <th>Dernière apparition</th>
-                                            <td>{{ recordSnapshot.last_seen | date: 'medium' }}</td>
+                                            <td>{{ currentPosition.occuredAt | date: 'medium' }}</td>
                                         </tr>
                                         
         
@@ -135,8 +135,8 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <button type="button" class="btn btn-icon btn-warning">
-                            <clr-icon shape="stop"></clr-icon>
+                        <button type="button" class="btn btn-icon btn-info-outline" (click)="resetPlaying()">
+                            <clr-icon shape="view-list"></clr-icon>
                             Retour
                         </button>
                     </div>

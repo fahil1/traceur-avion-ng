@@ -1,5 +1,4 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { UtilsRTP } from '../utils-rtp';
 import Zoom from 'ol/control/zoom';
 import FullScreen from 'ol/control/fullscreen';
 
@@ -18,7 +17,6 @@ import { RealTimeMappingService } from '../real-time-mapping.service';
   styleUrls: ['./real-time-plotter.component.css']
 })
 export class RealTimePlotterComponent implements OnInit {
-  utils: UtilsRTP = new UtilsRTP();
   map: Map;
   ajaxCompleted = false;
   antennas: Antenna[];
