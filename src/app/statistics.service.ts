@@ -10,7 +10,7 @@ import { Statistics } from './statistics';
   providedIn: 'root'
 })
 export class StatisticsService {
-  private statsUrl = 'http://localhost:8080/api/statistics';
+  private statsUrl = 'api/statistics';
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };

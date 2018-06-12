@@ -62,6 +62,7 @@ export class RecordingsComponent implements OnInit {
   ft_airplane: Feature;
   ft_trail: Feature;
   ly_trail: Vector;
+  collapsed = true;
 
   constructor(
     private recordingsService: RecordingsService
@@ -70,6 +71,21 @@ export class RecordingsComponent implements OnInit {
   ngOnInit() {
     this.getRecordings();
     this.createMap();
+  }
+
+  onMapMode() {
+    this.cl_offline = !this.cl_offline;
+    if (this.cl_offline) {
+      this.ly_offlineBase.setVisible(true);
+      this.ly_onlineBase.setVisible(false);
+      this.map.getView().setMinZoom(5);
+      this.map.getView().setMaxZoom(11);
+    } else {
+      this.ly_offlineBase.setVisible(false);
+      this.ly_onlineBase.setVisible(true);
+      this.map.getView().setMinZoom(0);
+      this.map.getView().setMaxZoom(28);
+    }
   }
 
 
@@ -86,6 +102,7 @@ export class RecordingsComponent implements OnInit {
     this.playingRecord = true;
     this.duration = this.calcDuration(this.selected.totalPositions);
     this.renderMap();
+    this.concentricCircles();
     this.initAirplane();
     this.startPlaying();
   }
@@ -146,9 +163,16 @@ export class RecordingsComponent implements OnInit {
     if (this.currentPosition.position) {
       this.ft_airplane.setGeometry(new Point(this.currentPosition.position));
       this.ft_airplane.getStyle().getImage().setRotation(this.currentPosition.heading * 0.0174533);
-      this.ft_airplane.getStyle().getText().setText(this.selected.call_sign);
+
+      const aux_call_sign = this.removeUnderscore(this.selected.call_sign);
+      // this.ft_airplane.getStyle().getText().setText(this.selected.call_sign);
+      this.ft_airplane.getStyle().getText().setText(aux_call_sign);
       this.ft_trail.getGeometry().appendCoordinate(this.currentPosition.position);
     }
+  }
+
+  removeUnderscore(call_sign: string) {
+    return call_sign != null ? call_sign.replace(/_/g, '') : '?';
   }
 
   onStop() {
@@ -194,7 +218,7 @@ export class RecordingsComponent implements OnInit {
       }),
       controls: [
         new Fullscreen({
-          source: this.mapEl.nativeElement
+          source: 'map-interface'
         })
       ],
       target: this.mapEl.nativeElement

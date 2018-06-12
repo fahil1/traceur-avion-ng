@@ -14,7 +14,7 @@ import { Antenna } from './antenna';
 })
 export class AntennasService {
   // private antennasUrl = 'api/antennas';
-  private antennasUrl = 'http://localhost:8080/api/antennas';
+  private antennasUrl = 'api/antennas';
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };

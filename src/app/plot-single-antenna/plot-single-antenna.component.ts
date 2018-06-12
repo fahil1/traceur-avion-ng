@@ -388,9 +388,13 @@ export class PlotSingleAntennaComponent implements OnInit {
     if (this.cl_offline) {
       this.ly_offlineBase.setVisible(true);
       this.ly_onlineBase.setVisible(false);
+      this.map.getView().setMinZoom(5);
+      this.map.getView().setMaxZoom(11);
     } else {
       this.ly_offlineBase.setVisible(false);
       this.ly_onlineBase.setVisible(true);
+      this.map.getView().setMinZoom(0);
+      this.map.getView().setMaxZoom(28);
     }
   }
 

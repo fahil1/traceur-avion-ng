@@ -11,7 +11,7 @@ import { Recording } from './recording';
   providedIn: 'root'
 })
 export class RecordingsService {
-  private recordingsUrl = 'http://localhost:8080/api/recordings';
+  private recordingsUrl = 'api/recordings';
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
   };

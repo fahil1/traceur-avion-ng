@@ -27,9 +27,25 @@
                     </div>
                 </div>
             </div>
-            <div #map id="map-recording">
 
+            <div id="map-interface"> 
+                <div #map id="map-recording">
+
+                </div>
+                <clr-vertical-nav [clrVerticalNavCollapsible]="true" [(clrVerticalNavCollapsed)]="collapsed" id="toolbar">
+                    <a clrVerticalNavLink [class.active]="cl_offline" (click)="onMapMode()">
+                        <clr-icon clrVerticalNavIcon shape="map"></clr-icon>
+                        Carte hors-ligne
+                    </a>
+                    <a clrVerticalNavLink [class.active]="cl_circles" (click)="concentricCircles()">
+                        <clr-icon clrVerticalNavIcon shape="target"></clr-icon>
+                        Cercles concentriques
+                    </a>
+                    
+                </clr-vertical-nav>
             </div>
+
+
         </div>
         <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12 col-xs-12" *ngIf="!playingRecord">
             <clr-datagrid>
@@ -42,7 +58,7 @@
                     <clr-dg-column></clr-dg-column>
                     <clr-dg-row  *clrDgItems="let recording of recordings" [clrDgItem]="recording">
                         <clr-dg-cell>{{ recording.icao }}</clr-dg-cell>
-                        <clr-dg-cell>{{ recording.call_sign }}</clr-dg-cell>
+                        <clr-dg-cell>{{ removeUnderscore(recording.call_sign) }}</clr-dg-cell>
                         <clr-dg-cell>{{ recording.antenna.name }}</clr-dg-cell>
                         <clr-dg-cell>{{ recording.totalPositions }}</clr-dg-cell>
                         <clr-dg-cell>{{ recording.createdAt | date:'yyyy-MM-dd HH:mm' }}</clr-dg-cell>
@@ -68,7 +84,8 @@
         <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 col-xs-12" *ngIf="playingRecord">
             <div id="selected-airplane" class="card" *ngIf="selected">
                     <div class="card-header">
-                        {{ selected.call_sign ? selected.call_sign : '?'  }}
+                        <!-- {{ selected.call_sign ? selected.call_sign : '?'  }} -->
+                        {{ removeUnderscore(selected.call_sign) }}
                     </div>
                     <div class="card-block" *ngIf="currentPosition">
                         <div class="card-text">

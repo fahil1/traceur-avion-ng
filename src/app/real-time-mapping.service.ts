@@ -7,11 +7,11 @@ import { WebsocketService } from './websocket.service';
   providedIn: 'root'
 })
 export class RealTimeMappingService {
-  CHAT_URL = 'ws://localhost:32000/';
+  ADSB_URL = 'ws://127.0.0.1:32000/';
   public messages: Subject<any[]>;
 
   constructor(wsService: WebsocketService) {
-    this.messages = <Subject<any[]>>wsService.connect(this.CHAT_URL)
+    this.messages = <Subject<any[]>>wsService.connect(this.ADSB_URL)
       .map((response: MessageEvent): any[] => {
         const data = JSON.parse(response.data);
         return data;
