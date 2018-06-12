@@ -110,7 +110,6 @@ export class AntennasComponent implements OnInit {
 
   calibrate() {
     this.createMap();
-    console.log(this.map);
     this.model.totalPois = this.model.poiList.length;
     this.renderCompleted = false;
     this.utils.renderMap(this.map, this.model, true);
